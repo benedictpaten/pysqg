@@ -1,10 +1,13 @@
 """An in memory representation of an SQG.
 """
 
+def parseInclude(include):
+    pass
+
 class SQG:
     graphTypes = {}
     
-    def __init__(self, name, includes=None, type=None, parents=None):
+    def __init__(self, name, includes=None, parents=None):
         self.name = int(name)
         
         #Parse the includes
@@ -21,22 +24,19 @@ class SQG:
             else:
                 self.includes[i] = SQG.graphTypes[self.includes[i]]
         
-        #Set the type, and add it to the graph types
-        if type == None:
-            raise RuntimeError("Type of SQG is None")
-        type = str(type)
-        self.type = type
-        if type not in self.graphTypes:
-            graphType = parseInclude(self.includes[i]) #Check if there exists a full definition for this type in the library of includes
-            if graphType == None:
-                SQG.graphTypes[type] = self 
-            assert SQG.graphTypes[type] != None
-        
         #Set the parents
+        if parents == None:
+            parents = []
         self.parents = parents
         
         #Set an initially empty dictionary of array lists
         self.arrayLists = {}
+        
+    def getIncludes(self):
+        return self.includes[:]
+    
+    def getParents(self):
+        return self.parents[:]
         
     def getArrayLists(self):
         return self.arrayLists.copy()
@@ -110,10 +110,6 @@ class ArrayList:
         variables = self.getVariables()
         if len(array) != len(variables):
             raise RuntimeError("Got an unexpected number of variables for an array %i %i" % (len(array), len(variables)))
-        for i in xrange(len(variables)):
-            name, type  = variables[i]
-            if array[i].__class__ != type:
-                raise RuntimeError("Got an unexpected object type in an array %s %s", array[i].__class__, type)
         self.array.addAll(array)
     
     def length(self):
@@ -131,8 +127,7 @@ class ArrayList:
         array = []
         if len(variables) != len(dict):
             raise RuntimeError("Got an unexpected number of variables in a dictionary %i %i" % (len(dict), len(variables)))
-        for i in xrange(variables):
-            name, type = i
+        for name in variables:
             array.append(dict[name])
         self.addArray(array)
     
@@ -140,9 +135,8 @@ class ArrayList:
         variables = self.getVariables()
         array = self.getArray(index)
         dict = {}
-        for i in xrange(variables):
-            name, type = i
-            dict[name] = array[i]
+        for i in xrange(len(variables)):
+            dict[variables[i]] = array[i]
         return dict
 
     def __iter__(self):
