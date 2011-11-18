@@ -1,0 +1,10 @@
+{ 	
+	“include”:[ “multigraph” ], 
+	“type”:”breakpointGraph”,
+
+	“adjacency”: [ { “inherits”=”edge” } ],
+
+	“multiAdjacency”: [ { “inherits”=”multiEdge” } ],
+
+	“group”: [ { “inherits”=”subgraph”, “allowedTypes”=[ “adjacency”, “multiAdjacency” ] } ]
+}

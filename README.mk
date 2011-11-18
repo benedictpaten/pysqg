@@ -1,0 +1,6 @@
+This a prototype implementation of SQG in Python.
+
+Supplied in this initial version will be:
+	a parser for the flat file format
+	a simple object model for in memory representation 
+	a utility for converting a representation into MongoDB

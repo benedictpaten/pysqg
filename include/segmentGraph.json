@@ -1,0 +1,12 @@
+{ 	
+	“include”:[ “multigraph” ], 
+	“type”:”segmentGraph”,
+
+	“segment”: [ { “inherits”=”directedEdge”, “variables”={ “length”:”integer” } } ],
+
+	“labelledSegment”: [ { “inherits”=”segment”, “variables”={ “sequence”:”string” } } ],
+
+	“multiSegment”: [ { “inherits”=”multiDirectedEdge”, “variables”={ “length”:”integer” } } ],
+
+	“multiLabelledSegment”: [ { “inherits”=”multiSegment”, “variables”={ “sequence”:”string” } } ]
+}

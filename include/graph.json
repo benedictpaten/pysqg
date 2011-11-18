@@ -1,0 +1,11 @@
+{ 	
+	“include”:[], 
+	“type”:”graph”, 
+
+	“node”: [ { “variables”={ “nodeName”:”name” } } ], 
+
+	“edge”: [ { “variables”={ “nodeName1”:”reference”, “nodeName2”:”reference” } } ], 	
+
+	“subgraph”:[ { “allowedTypes”=[ “node”, “edge” ],
+“variables”={ “subgraphName”:”name”, “nodes”:”array” } } ]
+}

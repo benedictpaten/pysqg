@@ -1,0 +1,6 @@
+{
+	“include”:[ “digraph” ],
+	“type”:”phylogeneticTree”,
+
+	“descent”: [ { “inherits”=”directedEdge”, “variables”={ “branchLength”:”float” } } ]
+}

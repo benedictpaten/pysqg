@@ -1,0 +1,8 @@
+{ 
+	“include”:[ “mixedGraph” ], 
+	“type”:”multigraph”, 
+
+	“multiEdge”: [ { “inherits”=”edge”, “variables”={ “degree”:”float” } } ],
+
+	“multiDirectedEdge”: [ { “inherits”=”directedEdge”, “variables”={ “degree”:”float” } } ]
+}

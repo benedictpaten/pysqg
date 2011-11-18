@@ -1,0 +1,8 @@
+{ 
+	“include”:[ “graph” ], 
+	“type”:”digraph”, 
+
+	“directedEdge”: [ { “variables”={ “outNodeName”:”reference”, “inNodeName”:”reference” } } ]
+
+	“directedSubgraph”: [ { “inherits”:”subgraph”, allowedTypes”=[ “node”, “directedEdge” ] } ]
+}
