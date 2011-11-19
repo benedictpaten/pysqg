@@ -3,8 +3,7 @@
 
 import json
 
-def jsonWrite(sqg, fileHandle):
-    for 
+def jsonWrite(sqg, fileHandle): 
     pass
 
 def jsonRead(fileHandle):
@@ -23,7 +22,7 @@ def jsonRead(fileHandle):
                 if name in properties:
                     return properties[name]
                 return None
-            arrayList = ArrayList(key, inherits=fn("inherits"), allowedTypes=fn("allowedTypes"), variables=fn("variables"))
+            arrayList = InMemoryArrayList(key, inherits=fn("inherits"), allowedTypes=fn("allowedTypes"), variables=fn("variables"))
             sqg.setArrayList(arrayList)
             if len(value) == 2:
                 arrays = value[1]

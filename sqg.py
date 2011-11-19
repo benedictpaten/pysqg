@@ -50,18 +50,9 @@ class SQG:
             raise RuntimeError("Trying to set an array list of type %s for an SQG which already has such an array list type" % arrayList.type)
         self.arrayLists[arrayList.getType()] = arrayList
 
-class ArrayListIter():
-    def __init__(self, arrayList):
-        self.arrayList = arrayList
-        self.index = 0
-
-    def next(self):
-        if self.index >= self.arrayList.length()-1:
-            raise StopIteration
-        self.index += 1
-        return self.arrayList[self.index]
-
-class ArrayList:
+class AbstractArrayList:
+    """Basic array list class
+    """
     arrayListTypes = {}
     
     def __init__(self, type, inherits=None, allowedTypes=None, variables=None):
@@ -94,7 +85,6 @@ class ArrayList:
                 raise RuntimeError("The type of array list is already seen, but the allowed tag is being redefined")
             if variables != None:
                 raise RuntimeError("The type of array list is already seen, but the variables tag is being redefined")
-        self.array = []
         self.variableLength = len(self.getVariables)
         
     def getType(self):
@@ -106,22 +96,31 @@ class ArrayList:
     def getVariables(self):
         return ArrayList[self.getType()][1]
     
+    def getArrayLength(self):
+        return self.variableLength
+    
+    def addArray(self, array):
+        raise RuntimeError("Calling an abstract method")
+    
+    def addDict(self, dict):
+        raise RuntimeError("Calling an abstract method")
+    
+    def __iter__(self):
+        raise RuntimeError("Calling an abstract method")
+        
+class InMemoryArrayList(AbstractArrayList):
+    """In memory array list class
+    """    
+    def __init__(self, type, inherits=None, allowedTypes=None, variables=None):
+        self.__init__(type, inherits, allowedTypes, variables)
+        self._array = []
+    
     def addArray(self, array):
         variables = self.getVariables()
         if len(array) != len(variables):
             raise RuntimeError("Got an unexpected number of variables for an array %i %i" % (len(array), len(variables)))
-        self.array.addAll(array)
-    
-    def length(self):
-        assert len(self.array) % self.variableLength == 0
-        return len(self.array)/self.variableLength
-            
-    def getArray(self, index):
-        i = self.variableLength * index
-        if index < 0 or i + self.variableLength > len(self.array):
-            raise RuntimeError("Got an index out of bounds request %i %i" % (index, self.length()))
-        return self.array[i:i:self.variableLength]
-    
+        self._array.addAll(array)
+        
     def addDict(self, dict):
         variables = self.getVariables()
         array = []
@@ -130,15 +129,33 @@ class ArrayList:
         for name in variables:
             array.append(dict[name])
         self.addArray(array)
+        
+    def _length(self):
+        return self.array / self.getArrayLength()
     
-    def getDict(self, index):
-        variables = self.getVariables()
-        array = self.getArray(index)
-        dict = {}
-        for i in xrange(len(variables)):
-            dict[variables[i]] = array[i]
-        return dict
+    class _iter():
+        def __init__(self, arrayList):
+            self.arrayList = arrayList
+            self.index = 0
+    
+        def next(self):
+            if self.index >= self.arrayList._length()-1:
+                raise StopIteration
+            self.index += 1
+            i = self.index * self.arrayList.getArrayLength()
+            j = i + self.arrayList.getArrayLength()
+            return self.arrayList.array[i:j]
+    
+    def __iter__(self):    
+        return _iter(self)
+    
+class StreamingArrayList(AbstractArrayList):
+    """Streaming array list class
+    """   
+    def __init__(self, stream, type, inherits=None, allowedTypes=None, variables=None):
+        self.__init__(type, inherits, allowedTypes, variables)
+        self.stream = stream
 
-    def __iter__(self):
-        return ArrayListIter(self)
+
+    
     
