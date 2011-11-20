@@ -4,14 +4,11 @@ from pysqg.tests import allTests
 from sonLib.bioio import parseSuiteTestOptions
 
 def allSuites(): 
-    allTests = unittest.TestSuite((allTests.allSuites,))
+    return unittest.TestSuite((allTests.allSuites(),))
         
 def main():
     parseSuiteTestOptions()
-    suite = allSuites()
-    runner = unittest.TextTestRunner()
-    runner.run(suite)
-    i = runner.run(suite)
+    i = unittest.TextTestRunner().run(allSuites())
     return len(i.failures) + len(i.errors)
         
 if __name__ == '__main__':

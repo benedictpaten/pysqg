@@ -5,15 +5,12 @@ import pysqg.tests.py.numpyTest
 from sonLib.bioio import parseSuiteTestOptions
 
 def allSuites(): 
-    allTests = unittest.TestSuite((unittest.makeSuite(pysqg.tests.py.networkXTest.TestsCase.allTests, 'test'),
-                                   unittest.makeSuite(pysqg.tests.py.numpyTest.TestsCase.allTests, 'test')))
+    return unittest.TestSuite((unittest.makeSuite(pysqg.tests.py.networkXTest.TestCase, 'test'),
+                                   unittest.makeSuite(pysqg.tests.py.numpyTest.TestCase, 'test')))
         
 def main():
     parseSuiteTestOptions()
-    suite = allSuites()
-    runner = unittest.TextTestRunner()
-    runner.run(suite)
-    i = runner.run(suite)
+    i = unittest.TextTestRunner().run(allSuites())
     return len(i.failures) + len(i.errors)
         
 if __name__ == '__main__':
