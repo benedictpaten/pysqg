@@ -1,6 +1,4 @@
 {
-	“include”:[ “digraph” ],
-	“type”:”phylogeneticTree”,
-
-	“descent”: [ { “inherits”=”directedEdge”, “variables”={ “branchLength”:”float” } } ]
+	“include”:[ “adjacencyGraph”, “phylogeneticTree” ], 
+	“type”:”dnaHistoryGraph”
 }

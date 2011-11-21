@@ -23,10 +23,10 @@ class TestCase(unittest.TestCase):
             return arrayList
         
         self.graph = [ (type, arrayNames, arrays, sharedVariables, fn(type, arrays)) for type, arrayNames, arrays, sharedVariables in \
-                      (("node", ("nodeName",), [ [1], [2], [3], [4], [5] ], {}),
-                ("edge", ("node1", "node2"), [ [1, 3 ], [1, 4 ] ], {}),
-                ("directedMultiEdge", ("outNode", "toNode", "degree"), [ [1, 2, 1 ], [2, 3, 2] ], {}),
-                ("mixedSubgraph", ("subgraphName", "nodes"), [ ], { "edges":[ "directed", "undirected" ]})) ]   
+                      (("node", ("nodeName",), ("int",), [ [1], [2], [3], [4], [5] ], {}),
+                ("edge", ("node1", "node2"), ("int", "int"), [ [1, 3 ], [1, 4 ] ], {}),
+                ("directedMultiEdge", ("outNode", "toNode", "degree"), ("int", "int", "int"), [ [1, 2, 1 ], [2, 3, 2] ], {}),
+                ("mixedSubgraph", ("subgraphName", "nodes"), ("int", "array"), [ ], { "edges":[ "directed", "undirected" ]})) ]   
     
     def testSQG_getIncludes(self):
         self.assertEqual(self.sqg.getIncludes(), self.graphIncludes)
@@ -41,25 +41,29 @@ class TestCase(unittest.TestCase):
         self.assertEqual(self.sqg.getArrayLists(), self.arrayLists)
     
     def testSQG_getArrayList(self):
-        for type, arrayNames, array, sharedVariables, arrayList in self.graph:
+        for type, arrayNames, arrayTypes, array, sharedVariables, arrayList in self.graph:
             self.assertEqual(self.sqg.getArrayList(type), arrayList)
     
     def testArrayList_getType(self):
-        for type, arrayNames, array, sharedVariables, arrayList in self.graph:
+        for type, arrayNames, arrayTypes, array, sharedVariables, arrayList in self.graph:
             self.assertEqual(arrayList.getType(), type)
     
     def testArrayList_getSharedVariables(self):
-        for type, arrayNames, array, sharedVariables, arrayList in self.graph:
+        for type, arrayNames, arrayTypes, array, sharedVariables, arrayList in self.graph:
             self.assertEqual(arrayList.getSharedVariables(), sharedVariables)
     
     def testArrayList_getArrayNames(self):
-        for type, arrayNames, array, sharedVariables, arrayList in self.graph:
+        for type, arrayNames, arrayTypes, array, sharedVariables, arrayList in self.graph:
             self.assertEqual(arrayList.getArrayNames(), arrayNames)
+            
+    def testArrayList_getArrayTypes(self):
+        for type, arrayNames, arrayTypes, array, sharedVariables, arrayList in self.graph:
+            self.assertEqual(arrayList.getArrayTypes(), arrayTypes)
     
     def testArrayList_getArrayWidth(self):
-        for type, arrayNames, array, sharedVariables, arrayList in self.graph:
+        for type, arrayNames, arrayTypes, array, sharedVariables, arrayList in self.graph:
             self.assertEqual(arrayList.getArrayWidth(), len(arrayNames))
     
     def testArrayList_iter(self):
-        for type, arrayNames, array, sharedVariables, arrayList in self.graph:
+        for type, arrayNames, arrayTypes, array, sharedVariables, arrayList in self.graph:
             self.assertEquals([ i for i in arrayList], array)

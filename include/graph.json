@@ -2,10 +2,10 @@
 	“include”:[], 
 	“type”:”graph”, 
 
-	“node”: [ { “variables”={ “nodeName”:”name” } } ], 
+	“node”: [ { “variables”={ “nodeName”:”int” } } ], 
 
-	“edge”: [ { “variables”={ “nodeName1”:”reference”, “nodeName2”:”reference” } } ], 	
+	“edge”: [ { “variables”={ “node1”:”int”, “node2”:”int” } } ], 	
 
-	“subgraph”:[ { “allowedTypes”=[ “node”, “edge” ],
-“variables”={ “subgraphName”:”name”, “nodes”:”array” } } ]
+	“subgraph”:[ { sharedVariables={“edges”:[ “edge” ] },
+“variables”={ “subgraphName”:”int”, “nodes”:”array” } } ]
 }

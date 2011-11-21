@@ -2,6 +2,7 @@
 """
 import os.path
 from pysqg.json import jsonRead
+from unittest import isinstance
 
 def getPysqgBaseDir():
     import pysqg.sqg
@@ -73,7 +74,7 @@ class AbstractArrayList:
     """
     arrayListTypes = {}
     
-    def __init__(self, type, inherits=None, arrayNames=None, sharedVariables=None):
+    def __init__(self, type, inherits=None, sharedVariables=None, variables=None):
         if type == None:
             raise RuntimeError("Type of arrayList is None")
         type = str(type)
@@ -83,28 +84,35 @@ class AbstractArrayList:
                 if inherits not in ArrayList.arrayListTypes:
                     raise RuntimeError("Trying to inherit from an array list type not yet seen: %s %s" % (inherits, type))
                 else:
-                    baseSharedVariables, baseArrayNames = ArrayList.arrayListTypes[inherits]
+                    baseSharedVariables, baseVariables = ArrayList.arrayListTypes[inherits][:2]
                     if sharedVariables == None:
                         sharedVariables = baseSharedVariables
                     for key in baseSharedVariables.keys(): #This serves to allow the new variables to overwrite previous definitions
                         if key not in sharedVariables:
                             sharedVariables[key] = baseSharedVariables[key]
-                    if arrayNames == None:
-                        arrayNames = ()
-                    arrayNames = baseArrayNames + arrayNames
+                    if variables == None:
+                        variables = ()
+                    variables = baseVariables + variables
             if sharedVariables == None:
                 sharedVariables = {}
-            if arrayNames == None:
+            if variables == None:
                 raise RuntimeError("The array names for the type %s are unspecified" % type)
-            if len(arrayNames) == 0:
+            if len(variables) == 0:
                 raise RuntimeError("The array names for the type %s are of zero length" % type)
-            ArrayList.arrayListTypes[type] = (sharedVariables, arrayNames)   
+            arrayNames = [ name for name, type in variables ]
+            arrayTypes = [ type for name, type in variables ]
+            for name, type in variables:
+                if not isinstance(name, "".__class__):
+                    raise RuntimeError("The name of an array variable is not a string %s" % name)
+                if type not in ("int", "float", "string", "object", "array"):
+                    raise RuntimeError("The type of an array variable is not a string %s %s" % (name, type))
+            ArrayList.arrayListTypes[type] = (sharedVariables, variables, arrayNames, arrayTypes)   
         else:
             if inherits != None:
                 raise RuntimeError("The type of array list is already seen, but the inherits tag is being redefined")
             if allowedTypes != None:
                 raise RuntimeError("The type of array list is already seen, but the allowed tag is being redefined")
-            if arrayNames != None:
+            if variables != None:
                 raise RuntimeError("The type of array list is already seen, but the array names tag is being redefined")
         self.arrayWidth = len(self.getArrayNames())
         
@@ -112,10 +120,13 @@ class AbstractArrayList:
         return self.type
     
     def getSharedVariables(self):
-        return ArrayList[self.getType()][0]
+        return ArrayList[self.getType()][0].copy()
     
     def getArrayNames(self):
-        return ArrayList[self.getType()][1]
+        return ArrayList[self.getType()][2][:]
+    
+    def getArrayTypes(self):
+        return ArrayList[self.getType()][3][:]
     
     def getArrayWidth(self):
         return self.arrayWidth
@@ -137,13 +148,22 @@ class InMemoryArrayList(AbstractArrayList):
         self._array = []
     
     def addArray(self, array):
-        variables = self.getArrayPositionNames()
-        if len(array) != len(variables):
-            raise RuntimeError("Got an unexpected number of variables for an array %i %i" % (len(array), len(variables)))
-        self._array.addAll(array)
+        array = array[:]
+        if len(array) != len(self.getArrayWidth()):
+            raise RuntimeError("Got an unexpected number of variables for an array %i %i" % (len(array), len(self.getArrayWidth())))
+        arrayTypes = self.getArrayTypes()
+        def fn(variable, type): #Do some lame conversion of variables to respect types.
+            #Not sure this is the right behaviour yet
+            if type == "string":
+                return string(variable)
+            elif type == "int":
+                return int(variable)
+            elif type == "float":
+                return float(variable)
+        self._array.addAll([ fn(array[i], arrayTypes[i]) for i in xrange(len(array)) ])
         
     def addDict(self, dict):
-        variables = self.getArrayPositionNames()
+        variables = self.getArrayNames()
         array = []
         if len(variables) != len(dict):
             raise RuntimeError("Got an unexpected number of variables in a dictionary %i %i" % (len(dict), len(variables)))

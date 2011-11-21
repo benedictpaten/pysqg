@@ -1,5 +1,0 @@
-{	
-	“include”:[ “graph”, “digraph” ]
-
-	“mixedSubgraph”: [ { “inherits”:”subgraph”, “allowedTypes”=[ “node”, “edge”, “directedEdge” ] } ]
-}

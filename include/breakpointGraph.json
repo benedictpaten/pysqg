@@ -1,3 +1,4 @@
+breakpointGraph.json
 { 	
 	“include”:[ “multigraph” ], 
 	“type”:”breakpointGraph”,
@@ -6,5 +7,5 @@
 
 	“multiAdjacency”: [ { “inherits”=”multiEdge” } ],
 
-	“group”: [ { “inherits”=”subgraph”, “allowedTypes”=[ “adjacency”, “multiAdjacency” ] } ]
+	“group”: [ { “inherits”=”subgraph”, sharedVariables={“edges”:[ “adjacency”, “multiAdjacency”] } } ]
 }

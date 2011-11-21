@@ -2,7 +2,7 @@
 	“include”:[ “multigraph” ], 
 	“type”:”segmentGraph”,
 
-	“segment”: [ { “inherits”=”directedEdge”, “variables”={ “length”:”integer” } } ],
+	“segment”: [ { “inherits”=”directedEdge”, “variables”={ “length”:”int” } } ],
 
 	“labelledSegment”: [ { “inherits”=”segment”, “variables”={ “sequence”:”string” } } ],
 

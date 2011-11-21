@@ -1,5 +1,5 @@
 {
-	“include”:[ “digraph” ],
+	“include”:[ “mixedGraph” ],
 	“type”:”phylogeneticTree”,
 
 	“descent”: [ { “inherits”=”directedEdge”, “variables”={ “branchLength”:”float” } } ]

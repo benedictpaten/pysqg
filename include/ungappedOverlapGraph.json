@@ -2,7 +2,7 @@
 	“include”:[ “adjacencyGraph” ],
 	“type”:”ungappedOverlapGraph”,
 	
-	“overlapAdjacency”: [ { “inherits”=”adjacency” , “variables”:{ “overlap”:”integer”} ],
+	“overlapAdjacency”: [ { “inherits”=”adjacency” , “variables”:{ “overlap”:”int”} ],
 
-	“overlapMultiAdjacency”: [ { “inherits”=”overlapMultiAdjacency”, “variables”:{ “overlap”:”integer” } } ]
+	“overlapMultiAdjacency”: [ { “inherits”=”overlapMultiAdjacency”, “variables”:{ “overlap”:”int” } } ]
 }
