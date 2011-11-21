@@ -1,12 +1,11 @@
 { 	
-	“include”:[ “multigraph” ], 
-	“type”:”segmentGraph”,
+	"include":[ "multigraph" ], 
 
-	“segment”: [ { “inherits”=”directedEdge”, “variables”={ “length”:”int” } } ],
+	"segment": [ { "inherits":"directedEdge", "variables":[ "length", "int" ] } ],
 
-	“labelledSegment”: [ { “inherits”=”segment”, “variables”={ “sequence”:”string” } } ],
+	"labelledSegment": [ { "inherits":"segment", "variables":[ "sequence", "string" ] } ],
 
-	“multiSegment”: [ { “inherits”=”multiDirectedEdge”, “variables”={ “length”:”integer” } } ],
+	"multiSegment": [ { "inherits":"multiDirectedEdge", "variables":[ "length", "int" ] } ],
 
-	“multiLabelledSegment”: [ { “inherits”=”multiSegment”, “variables”={ “sequence”:”string” } } ]
+	"multiLabelledSegment": [ { "inherits":"multiSegment", "variables":[ "sequence", "string" ] } ]
 }

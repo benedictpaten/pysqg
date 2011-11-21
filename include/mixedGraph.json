@@ -1,10 +1,9 @@
 { 
-	“include”:[ “graph” ], 
-	“type”:”digraph”, 
+	"include":[ "graph" ], 
 
-	“directedEdge”: [ { “variables”={ “outNode”:”int”, “inNode”:”int” } } ]
+	"directedEdge": [ { "variables":[ "outNode", "int", "inNode", "int" ] } ],
 
-	“directedSubgraph”: [ { “inherits”:”subgraph”, sharedVariables={“edges”:[ “directedEdge” ] } ]
+	"directedSubgraph": [ { "inherits":"subgraph", "sharedVariables":{ "edges":[ "directedEdge" ] } } ],
 
-	“mixedSubgraph”: [ { “inherits”:”subgraph”, sharedVariables={“edges”:[ “edge”, “directedEdge” ] } } ]
+	"mixedSubgraph": [ { "inherits":"subgraph", "sharedVariables":{"edges":[ "edge", "directedEdge" ] } } ]
 }

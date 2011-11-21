@@ -1,4 +1,3 @@
 { 
-	“include”:[ “segmentGraph”, “breakpointGraph” ],
-	“type”:”adjacencyGraph”
+	"include":[ "segmentGraph", "breakpointGraph" ]
 }

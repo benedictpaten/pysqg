@@ -1,6 +1,5 @@
 {
-	“include”:[ “mixedGraph” ],
-	“type”:”phylogeneticTree”,
+	"include":[ "mixedGraph" ],
 
-	“descent”: [ { “inherits”=”directedEdge”, “variables”={ “branchLength”:”float” } } ]
+	"descent": [ { "inherits":"directedEdge", "variables":[ "branchLength", "float" ] } ]
 }

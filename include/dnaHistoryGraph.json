@@ -1,4 +1,3 @@
 {
-	“include”:[ “adjacencyGraph”, “phylogeneticTree” ], 
-	“type”:”dnaHistoryGraph”
+	"include":[ "adjacencyGraph", "phylogeneticTree" ]
 }

@@ -3,33 +3,37 @@ import unittest
 from pysqg.sqg import SQG, InMemoryArrayList, StreamingArrayList
 
 class TestCase(unittest.TestCase):
-    
-    def setup(self):
+    def setUp(self):
         """Constructs a simple graph to test
         """
-        self.graphIncludes = ["multiGraph"]
+        self.graphIncludes = ["multigraph"]
         self.parents = [ "parent" ]
         self.sharedVariables = { "this is a test":None }
-        self.sqg = SQG(1, includes=self.graphIncludes, parents=self.parents, sharedVariables=self.sharedVariables)
+        self.sqgName = 1
+        self.sqg = SQG(includes=self.graphIncludes, name=self.sqgName, parents=self.parents, sharedVariables=self.sharedVariables)
         
-        def fn(type, arrays):
-            arrayList = InMemoryArrayList(type)
+        def fn(type, arrayNames, arrays):
+            arrayList = InMemoryArrayList(type=type)
             self.sqg.setArrayList(arrayList)
             i = len(arrays)/2
-            for array in self.nodesArray[:i]:
+            for array in arrays[:i]:
                 arrayList.addArray(array)
-            for array in self.nodesArray[i:]:
-                arrayList.nodes.addDict(dict(zip(self.arrayNames, array)))
+            for array in arrays[i:]:
+                arrayList.addDict(dict(zip(arrayNames, array)))
             return arrayList
         
-        self.graph = [ (type, arrayNames, arrays, sharedVariables, fn(type, arrays)) for type, arrayNames, arrays, sharedVariables in \
+        self.graph = [ (type, arrayNames, arrayTypes, arrays, sharedVariables, fn(type, arrayNames, arrays)) for \
+                      type, arrayNames, arrayTypes, arrays, sharedVariables in \
                       (("node", ("nodeName",), ("int",), [ [1], [2], [3], [4], [5] ], {}),
                 ("edge", ("node1", "node2"), ("int", "int"), [ [1, 3 ], [1, 4 ] ], {}),
-                ("directedMultiEdge", ("outNode", "toNode", "degree"), ("int", "int", "int"), [ [1, 2, 1 ], [2, 3, 2] ], {}),
-                ("mixedSubgraph", ("subgraphName", "nodes"), ("int", "array"), [ ], { "edges":[ "directed", "undirected" ]})) ]   
+                ("multiDirectedEdge", ("outNode", "inNode", "degree"), ("int", "int", "float"), [ [1, 2, 1 ], [2, 3, 2] ], {}),
+                ("mixedSubgraph", ("subgraphName", "nodes"), ("int", "array"), [ ], { "edges":[ "edge", "directedEdge" ]})) ]   
     
     def testSQG_getIncludes(self):
         self.assertEqual(self.sqg.getIncludes(), self.graphIncludes)
+        
+    def testSQG_getName(self):
+        self.assertEqual(self.sqg.getName(), self.sqgName)
     
     def testSQG_getParents(self):
         self.assertEqual(self.sqg.getParents(), self.parents)
@@ -38,7 +42,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(self.sqg.getSharedVariables(), self.sharedVariables)
     
     def testSQG_getArrayLists(self):
-        self.assertEqual(self.sqg.getArrayLists(), self.arrayLists)
+        self.assertEqual(self.sqg.getArrayLists(), dict([ (type, arrayList) for type, arrayNames, arrayTypes, array, sharedVariables, arrayList in self.graph ]))
     
     def testSQG_getArrayList(self):
         for type, arrayNames, arrayTypes, array, sharedVariables, arrayList in self.graph:
@@ -67,3 +71,13 @@ class TestCase(unittest.TestCase):
     def testArrayList_iter(self):
         for type, arrayNames, arrayTypes, array, sharedVariables, arrayList in self.graph:
             self.assertEquals([ i for i in arrayList], array)
+
+def main():
+    from sonLib.bioio import parseSuiteTestOptions
+    import sys
+    parseSuiteTestOptions()
+    sys.argv = sys.argv[:1]
+    unittest.main()
+        
+if __name__ == '__main__':
+    main()
