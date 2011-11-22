@@ -1,7 +1,7 @@
 import unittest
 import os
-from sonLib.bioio import getTempFile
-from pysqg.sqg import SQG, InMemoryArrayList, StreamingArrayList
+from sonLib.bioio import getTempFile, system
+from pysqg.sqg import SQG, InMemoryArrayList, OnDiskArrayList
 
 class TestCase(unittest.TestCase):
     def setUp(self):
@@ -14,8 +14,7 @@ class TestCase(unittest.TestCase):
         
         def fn3(type):
             self.tempFile = getTempFile(rootDir=os.getcwd())
-            self.fileHandle = open(self.tempFile, 'rw')
-            return StreamingArrayList(stream=self.fileHandle, type=type)
+            return OnDiskArrayList(file=self.tempFile, type=type)
         
         def fn2(arrayListConstructor):
             sqg = SQG(includes=self.graphIncludes, name=self.sqgName, parents=self.parents, sharedVariables=self.sharedVariables)
@@ -42,8 +41,7 @@ class TestCase(unittest.TestCase):
         self.graphs = (fn2(InMemoryArrayList), fn2(fn3))
     
     def tearDown(self):
-        close(self.fileHandle)
-        os.remove(self.tempFile)
+        system("rm -rf %s" % self.tempFile)
         
     def testSQG_getIncludes(self):
         for sqg, graph in self.graphs:

@@ -228,22 +228,24 @@ class InMemoryArrayList(AbstractArrayList):
     def __init__(self, type, inherits=None, sharedVariables=None, variables=None):
         AbstractArrayList.__init__(self, type, inherits, sharedVariables, variables)
         self._array = []
+        
+    def _typeVariable(self, variable, type):
+        #Not sure this is the right behaviour yet
+        if type == "string":
+            return string(variable)
+        elif type == "int":
+            return int(variable)
+        elif type == "float":
+            return float(variable)
+        return variable
     
     def addArray(self, array):
         array = array[:]
         if len(array) != self.getArrayWidth():
             raise RuntimeError("Got an unexpected number of variables for an array %i %i" % (len(array), self.getArrayWidth()))
         arrayTypes = self.getArrayTypes()
-        def fn(variable, type): #Do some lame conversion of variables to respect types.
-            #Not sure this is the right behaviour yet
-            if type == "string":
-                return string(variable)
-            elif type == "int":
-                return int(variable)
-            elif type == "float":
-                return float(variable)
         for i in xrange(len(array)):
-            self._array.append(fn(array[i], arrayTypes[i]))
+            self._array.append(self._typeVariable(array[i], arrayTypes[i]))
         
     def addDict(self, dict):
         variables = self.getArrayNames()
@@ -276,14 +278,61 @@ class InMemoryArrayList(AbstractArrayList):
             j = i + self.arrayList.getArrayWidth()
             self.index += 1
             return self.arrayList._array[i:j]
+        
+        def __iter__(self):
+            return self
     
     def __iter__(self):
         return InMemoryArrayList._iter(self)
     
-class StreamingArrayList(AbstractArrayList):
-    """Streaming array list class
+class OnDiskArrayList(InMemoryArrayList):
+    """Array list class which writes to disk.
     """   
-    def __init__(self, stream, type, inherits=None, sharedVariables=None, variables=None):
-        AbstractArrayList.__init__(self, type, inherits, sharedVariables, variables)
-        self.stream = stream
+    def __init__(self, file, type, inherits=None, sharedVariables=None, variables=None, bufferSize=100000):
+        InMemoryArrayList.__init__(self, type, inherits, sharedVariables, variables)
+        self.file = file
+        self.fileHandleWrite = open(file, "a")
+        self.bufferSize = bufferSize
+        
+    def __del__(self):
+        self.fileHandleWrite.close()
+        
+    def addArray(self, array):
+        InMemoryArrayList.addArray(self, array)
+        if len(self._array) > self.bufferSize:
+            self.flush()
+    
+    def flush(self):
+        for array in InMemoryArrayList._iter(self):
+            self.fileHandleWrite.write(",".join(array) + "\n")
+        self.fileHandleWrite.flush()
+        self._array = []
+    
+    def close(self):
+        self.flush()
+        self.fileHandleWrite.close()
+    
+    def sort(self, cmpFn=cmp):
+        self.flush() #Flush everything on disk
+        pass
+    
+    class _iter2():
+        def __init__(self, arrayList):
+            self.fileHandleRead = open(arrayList.file, 'r')
+    
+        def next(self):
+            line = self.fileHandleRead.readline()
+            if line == '':
+                self.fileHandleRead.close()
+                raise StopIteration
+            arrayTypes = self.getArrayTypes()
+            array = json.loads('[' + line + ']')
+            if len(arrayType) != len(array):
+                raise RuntimeError("Got an unexepected number of variables in an array")
+            return [ self._typeVariable(array[i], arrayTypes[i]) for i in xrange(len(array)) ]
+    
+    def __iter__(self):
+        self.flush()
+        return OnDiskArrayList._iter2(self)
+    
     
