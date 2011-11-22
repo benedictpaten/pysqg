@@ -144,6 +144,7 @@ class AbstractArrayList:
             raise RuntimeError("Type of arrayList is None")
         type = str(type)
         self.type = type
+        
         if self.type not in AbstractArrayList.arrayListTypes:
             if inherits != None:
                 if inherits not in AbstractArrayList.arrayListTypes:
@@ -152,34 +153,46 @@ class AbstractArrayList:
                     baseSharedVariables, baseVariables = AbstractArrayList.arrayListTypes[inherits][:2]
                     if sharedVariables == None:
                         sharedVariables = baseSharedVariables
-                    for key in baseSharedVariables.keys(): #This serves to allow the new variables to overwrite previous definitions
-                        if key not in sharedVariables:
-                            sharedVariables[key] = baseSharedVariables[key]
+                    else:
+                        for key in baseSharedVariables.keys(): #This serves to allow the new variables to overwrite previous definitions
+                            if key not in sharedVariables:
+                                sharedVariables[key] = baseSharedVariables[key]
                     if variables == None:
-                        variables = ()
-                    variables = baseVariables + tuple(variables)
-            if sharedVariables == None:
-                sharedVariables = {}
-            if variables == None:
-                raise RuntimeError("The variables for the type %s are unspecified" % type)
-            if len(variables) == 0:
-                raise RuntimeError("The variables for the type %s are of zero length" % type)
-            arrayNames = [ str(name) for name in variables[::2] ]
-            arrayTypes = [ str(variableType) for variableType in variables[1::2] ]
+                        variables = baseVariables
+                    else:
+                        variables = baseVariables + tuple(variables)
+            else: #Case that it doesn't inherit, the variables must exist
+                if variables == None:
+                    raise RuntimeError("The variables for the type %s are unspecified" % type)
+                if len(variables) == 0:
+                    raise RuntimeError("The variables for the type %s are of zero length" % type)
+                if len(variables) % 2 != 0:
+                    raise RuntimeError("The variables and their types are not paired for the type" % type)
+                variables = tuple(variables)
+            
+            assert len(variables) > 0
+            assert len(variables) % 2 == 0
+            
+            arrayNames = tuple([ str(name) for name in variables[::2] ])
+            arrayTypes = tuple([ str(variableType) for variableType in variables[1::2] ])
             for name, variableType in zip(arrayNames, arrayTypes):
                 if not isinstance(name, "".__class__):
                     raise RuntimeError("The name of an array variable is not a string %s %s" % (name, name.__class__))
                 if variableType not in ("int", "float", "string", "object", "array"):
                     raise RuntimeError("The type of an array variable is not a string %s %s" % (name, variableType))
-            AbstractArrayList.arrayListTypes[self.type] = (sharedVariables, tuple(variables), tuple(arrayNames), tuple(arrayTypes))   
+                        
+            if sharedVariables == None:
+                sharedVariables = {}
+            
+            AbstractArrayList.arrayListTypes[self.type] = (sharedVariables, variables, arrayNames, arrayTypes)
         else:
-            pass
-            #if inherits != None:
-            #    raise RuntimeError("The type of array list is already seen, but the inherits tag is being redefined")
-            #if sharedVariables != None:
-            #    raise RuntimeError("The type of array list is already seen, but the shared variables tag is being redefined")
-            #if variables != None:
-            #    raise RuntimeError("The type of array list is already seen, but the array variables tag is being redefined")
+            #Check the definition of the array is not being altered
+            existingSharedVariables, existingVariables = AbstractArrayList.arrayListTypes[self.type][:2]
+            if sharedVariables != None and existingSharedVariables != sharedVariables:
+                raise RuntimeError("The type of array list is already seen and the shared variables definition is being altered: %s %s" % (existingSharedVariables, sharedVariables))
+            if variables != None and existingVariables[-len(variables):] != tuple(variables):
+                raise RuntimeError("The type of array list is already seen and the list of variables/types being redefined: %s %s" % (existingVariables, variables))
+        
         self.arrayWidth = len(self.getArrayNames())
         
     def getType(self):
@@ -204,6 +217,9 @@ class AbstractArrayList:
         raise RuntimeError("Calling an abstract method")
     
     def __iter__(self):
+        raise RuntimeError("Calling an abstract method")
+    
+    def sort(self):
         raise RuntimeError("Calling an abstract method")
         
 class InMemoryArrayList(AbstractArrayList):
@@ -241,6 +257,13 @@ class InMemoryArrayList(AbstractArrayList):
     def _length(self):
         return len(self._array) / self.getArrayWidth()
     
+    def sort(self, cmpFn=cmp):
+        array = [ i for i in self ]
+        array.sort(cmpFn)
+        self._array = []
+        for i in array:
+            self.addArray(i)
+    
     class _iter():
         def __init__(self, arrayList):
             self.arrayList = arrayList
@@ -254,7 +277,7 @@ class InMemoryArrayList(AbstractArrayList):
             self.index += 1
             return self.arrayList._array[i:j]
     
-    def __iter__(self):    
+    def __iter__(self):
         return InMemoryArrayList._iter(self)
     
 class StreamingArrayList(AbstractArrayList):
@@ -263,7 +286,4 @@ class StreamingArrayList(AbstractArrayList):
     def __init__(self, stream, type, inherits=None, sharedVariables=None, variables=None):
         AbstractArrayList.__init__(self, type, inherits, sharedVariables, variables)
         self.stream = stream
-
-
-    
     
