@@ -1,11 +1,47 @@
-"""An in memory representation of an SQG.
+"""Core functions working with SQGs
 """
 import os.path
 import json
 from sonLib.bioio import logger
 
-def jsonWrite(sqg, fileHandle): 
-    raise RuntimeError("Not implemented yet")
+def jsonWrite(sqg, fileHandle):
+    jsonSQG = { "include":sqg.getIncludes(), 
+               "parents":sqg.getParents(), "sharedVariables":sqg.getSharedVariables(),
+                }
+    if sqg.getName() != None:
+        jsonSQG["name"] = sqg.getName()
+    
+    def propertiesFn(arrayList):
+        """Build the properties
+        """
+        jsonProperties = {}
+        sharedVariables = arrayList.getSharedVariables()
+        variables = zip(arrayList.getArrayNames(), arrayList.getArrayTypes())
+        if arrayList.getInherits() != None:
+            parentArrayList = arrayList.getInherits()
+            jsonProperties["inherits"] = arrayList.getInherits().getType()
+            variables = variables[-parentArrayList.getArrayWidth():]
+            for key, value in parentArrayList.getSharedVariables().items():
+                if key in sharedVariables and sharedVariables[key] == value:
+                    sharedVariables.pop(key)
+        jsonProperties["sharedVariables"] = arrayList.getSharedVariables()
+        flatVariables = []
+        for i, j in variables:
+            flatVariables.append(i)
+            flatVariables.append(j)
+        jsonProperties["variables"] = flatVariables
+        return jsonProperties
+        
+    #Add the arraylists in a hacky way, currently
+    for arrayListType, arrayList in sqg.getArrayLists().items():
+        jsonSQG[arrayListType] = [ propertiesFn(arrayList) ]
+        if isinstance(arrayList, InMemoryArrayList):
+            jsonSQG[arrayListType].append(arrayList._array)
+        else:
+            jsonSQG[arrayListType].append(None)
+            jsonSQG[arrayListType].append(arrayList.file)
+        
+    json.dump(jsonSQG, fileHandle)
 
 def jsonRead(fileHandle):
     jsonSQG = json.load(fileHandle)
@@ -45,20 +81,29 @@ def jsonRead(fileHandle):
             arrayListTypes = [ arrayListType ] + arrayListTypes
             continue
         
-        arrayList = InMemoryArrayList(arrayListType, 
-                                      inherits=inherits, 
-                                      sharedVariables=fn("sharedVariables"), 
-                                      variables=fn("variables"))
+        if len(jsonArrayList) not in (1, 2, 3):
+            raise RuntimeError("Got an incorrect number of arguments for a json array list: %s %i" % (jsonArrayList, len(jsonArrayList)))
+        
+        if len(jsonArrayList) in (1, 2): #In memory
+            arrayList = InMemoryArrayList(type=arrayListType, 
+                                          inherits=inherits, 
+                                          sharedVariables=fn("sharedVariables"), 
+                                          variables=fn("variables"))
+            if len(jsonArrayList) == 2:
+                arrays = jsonArrayList[1]
+                arrayWidth = arrayList.getArrayWidth()
+                #Now parse in the different arrays
+                assert len(arrays) % arrayWidth == 0 #Otherwise the length of the array is not divisible by the length of each entry
+                for j in xrange(0,len(arrays),arrayWidth):
+                    arrayList.addArray(arrays[j:j+arrayWidth])
+        else: #On disk
+            arrayList = OnDiskArrayList(file=jsonArrayList[2],
+                                        type=arrayListType, 
+                                        inherits=inherits, 
+                                        sharedVariables=fn("sharedVariables"), 
+                                        variables=fn("variables"))
         
         sqg.setArrayList(arrayList)
-        if len(jsonArrayList) == 2:
-            arrays = jsonArrayList[1]
-            arrayWidth = arrayList.getArrayWidth()
-            #Now parse in the different arrays
-            assert len(arrays) % arrayWidth == 0 #Otherwise the length of the array is not divisible by the length of each entry
-            for j in xrange(0,len(arrays),arrayWidth):
-                arrayList.addArray(arrays[j:j+arrayWidth])
-    
     return sqg
 
 def getPysqgBaseDir():
@@ -184,7 +229,9 @@ class AbstractArrayList:
             if sharedVariables == None:
                 sharedVariables = {}
             
-            AbstractArrayList.arrayListTypes[self.type] = (sharedVariables, variables, arrayNames, arrayTypes)
+            AbstractArrayList.arrayListTypes[self.type] = (sharedVariables, variables, arrayNames, arrayTypes, inherits, self)
+            #Replace reference with abstract version of class, so that getInherits retrieves abstract version of class
+            AbstractArrayList.arrayListTypes[self.type] = (sharedVariables, variables, arrayNames, arrayTypes, inherits, AbstractArrayList(type, inherits=inherits, sharedVariables=sharedVariables, variables=variables))
         else:
             #Check the definition of the array is not being altered
             existingSharedVariables, existingVariables = AbstractArrayList.arrayListTypes[self.type][:2]
@@ -197,6 +244,12 @@ class AbstractArrayList:
         
     def getType(self):
         return self.type
+    
+    def getInherits(self):
+        inherits = AbstractArrayList.arrayListTypes[self.getType()][-2]
+        if inherits == None:
+            return None
+        return AbstractArrayList.arrayListTypes[inherits][-1]
     
     def getSharedVariables(self):
         return AbstractArrayList.arrayListTypes[self.getType()][0].copy()
@@ -218,9 +271,6 @@ class AbstractArrayList:
     
     def __iter__(self):
         raise RuntimeError("Calling an abstract method")
-    
-    def sort(self):
-        raise RuntimeError("Calling an abstract method")
         
 class InMemoryArrayList(AbstractArrayList):
     """In memory array list class
@@ -237,6 +287,14 @@ class InMemoryArrayList(AbstractArrayList):
             return int(variable)
         elif type == "float":
             return float(variable)
+        elif type == "array":
+            if not isinstance(variable, [].__class__):
+                raise RuntimeError("Trying to add a variable which should be of type array %s" % variable)
+        elif type == "object":
+            if not isinstance(variable, {}.__class__):
+                raise RuntimeError("Trying to add a variable which should be of type object %s" % variable)
+        else:
+            raise RuntimeError("Unrecognised type: %s" % variable)
         return variable
     
     def addArray(self, array):
@@ -258,13 +316,6 @@ class InMemoryArrayList(AbstractArrayList):
         
     def _length(self):
         return len(self._array) / self.getArrayWidth()
-    
-    def sort(self, cmpFn=cmp):
-        array = [ i for i in self ]
-        array.sort(cmpFn)
-        self._array = []
-        for i in array:
-            self.addArray(i)
     
     class _iter():
         def __init__(self, arrayList):
@@ -304,20 +355,19 @@ class OnDiskArrayList(InMemoryArrayList):
     
     def flush(self):
         for array in InMemoryArrayList._iter(self):
-            self.fileHandleWrite.write(",".join(array) + "\n")
+            json.dump(array, self.fileHandleWrite)
+            self.fileHandleWrite.write("\n")
         self.fileHandleWrite.flush()
         self._array = []
+        from sonLib.bioio import system
     
     def close(self):
         self.flush()
         self.fileHandleWrite.close()
     
-    def sort(self, cmpFn=cmp):
-        self.flush() #Flush everything on disk
-        pass
-    
     class _iter2():
         def __init__(self, arrayList):
+            self.arrayList = arrayList
             self.fileHandleRead = open(arrayList.file, 'r')
     
         def next(self):
@@ -325,11 +375,11 @@ class OnDiskArrayList(InMemoryArrayList):
             if line == '':
                 self.fileHandleRead.close()
                 raise StopIteration
-            arrayTypes = self.getArrayTypes()
-            array = json.loads('[' + line + ']')
-            if len(arrayType) != len(array):
+            arrayTypes = self.arrayList.getArrayTypes()
+            array = json.loads(line)
+            if len(arrayTypes) != len(array):
                 raise RuntimeError("Got an unexepected number of variables in an array")
-            return [ self._typeVariable(array[i], arrayTypes[i]) for i in xrange(len(array)) ]
+            return [ self.arrayList._typeVariable(array[i], arrayTypes[i]) for i in xrange(len(array)) ]
     
     def __iter__(self):
         self.flush()
