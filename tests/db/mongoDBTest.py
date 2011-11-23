@@ -1,19 +1,25 @@
 import unittest
-import pymongo
-
+import os
+from pymongo import Connection
+from sonLib.bioio import getTempFile
 from pysqg.dbs.mongoDB import mongoDBWrite, mongoDBRead
+from pysqg.sqg import InMemoryArrayList
+from pysqg.tests.abstractTests import AbstractTestCase
 
-class TestCase(unittest.TestCase):
-    def setup(self):
-        pass
-    
-    def teardown(self):
-        pass
-    
-    def testMongoDBWriteAndRead(self):
-        """Writes an example graph into mongo DB, then extracts it back out.
+class TestCase(AbstractTestCase):
+    def setUp(self):
+        """Constructs a simple graph to writes it into mongodb then reads it back out.
         """
-        
+        AbstractTestCase.setUp(self)
+        sqg, graph = self.makeGraph(InMemoryArrayList)
+        connection = Connection()
+        database = connection["sqg"]
+        mongoDBWrite(sqg, database)
+        def fn():
+            tempFile = getTempFile(rootDir=os.getcwd())
+            self.tempFiles.append(tempFile)
+            return tempFile
+        self.graphs = ((mongoDBRead(database), graph), (mongoDBRead(database, tempFileGenerator=fn), graph))
 
 def main():
     from sonLib.bioio import parseSuiteTestOptions
@@ -24,4 +30,3 @@ def main():
         
 if __name__ == '__main__':
     main()
-    

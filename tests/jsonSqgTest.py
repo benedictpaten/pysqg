@@ -2,7 +2,7 @@ import unittest
 import os
 import json
 from sonLib.bioio import logger, getTempFile
-from pysqg.sqg import readJsonSqgFile, writeJsonSqgFile, makeJsonSqgFromSqg, makeSqgFromJsonSqg, getPysqgIncludeDir
+from pysqg.sqg import readJsonSqgFile, writeJsonSqgFile, getPysqgIncludeDir
 
 class TestCase(unittest.TestCase):  
     def setUp(self):
@@ -18,23 +18,6 @@ class TestCase(unittest.TestCase):
             fileHandle = open(os.path.join(getPysqgIncludeDir(), include + ".json"), 'r')
             json.load(fileHandle)
             fileHandle.close()
-    
-    def testMakeSqgFromJsonSqg(self):
-        for include in self.jsonFiles:
-            logger.info("Going to use json.load to parse to json sqg %s" % include)
-            fileHandle = open(os.path.join(getPysqgIncludeDir(), include + ".json"), 'r')
-            jsonSqg = json.load(fileHandle)
-            sqg = makeSqgFromJsonSqg(jsonSqg)
-            fileHandle.close()
-    
-    def testMakeJsonSqgFromSqg(self):
-        for include in self.jsonFiles:
-            logger.info("Going to use json.load to parse to json sqg %s" % include)
-            fileHandle = open(os.path.join(getPysqgIncludeDir(), include + ".json"), 'r')
-            jsonSqg = json.load(fileHandle)
-            sqg = makeSqgFromJsonSqg(jsonSqg)
-            fileHandle.close()
-            jsonSqg2 = makeJsonSqgFromSqg(sqg)
     
     def testJsonReadAndWriteSqg(self):
         for include in self.jsonFiles:
