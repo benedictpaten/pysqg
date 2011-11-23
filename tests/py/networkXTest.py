@@ -8,7 +8,7 @@ class TestCase(unittest.TestCase):
         pass
     
 def main():
-    from sonLib.bioio import parseSuiteTestOptions
+    from pysqg.bioio import parseSuiteTestOptions
     import sys
     parseSuiteTestOptions()
     sys.argv = sys.argv[:1]

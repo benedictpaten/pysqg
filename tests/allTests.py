@@ -5,7 +5,7 @@ import pysqg.tests.db.allTests
 import pysqg.tests.jsonSqgTest
 import pysqg.tests.py.allTests
 import pysqg.tests.sqgTest
-from sonLib.bioio import parseSuiteTestOptions
+from pysqg.bioio import parseSuiteTestOptions
 
 def allSuites(): 
     return unittest.TestSuite((unittest.makeSuite(pysqg.tests.sqgTest.TestCase, 'test'),

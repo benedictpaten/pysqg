@@ -1,9 +1,9 @@
 import unittest
 import os
 from pymongo import Connection
-from sonLib.bioio import getTempFile
+from pysqg.bioio import getTempFile
 from pysqg.dbs.mongoDB import mongoDBWrite, mongoDBRead
-from pysqg.sqg import InMemoryArrayList
+from pysqg.arrayList import InMemoryArrayList
 from pysqg.tests.abstractTests import AbstractTestCase
 
 class TestCase(AbstractTestCase):
@@ -22,7 +22,7 @@ class TestCase(AbstractTestCase):
         self.graphs = ((mongoDBRead(database), graph), (mongoDBRead(database, tempFileGenerator=fn), graph))
 
 def main():
-    from sonLib.bioio import parseSuiteTestOptions
+    from pysqg.bioio import parseSuiteTestOptions
     import sys
     parseSuiteTestOptions()
     sys.argv = sys.argv[:1]

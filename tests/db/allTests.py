@@ -1,7 +1,7 @@
 import unittest
 import sys
 import pysqg.tests.db.mongoDBTest
-from sonLib.bioio import parseSuiteTestOptions
+from pysqg.bioio import parseSuiteTestOptions
 
 def allSuites(): 
     return unittest.TestSuite((unittest.makeSuite(pysqg.tests.db.mongoDBTest.TestCase, 'test'),))

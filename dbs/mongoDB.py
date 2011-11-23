@@ -2,7 +2,8 @@
 """
 
 import pymongo
-from pysqg.sqg import makeJsonSqgProperties, makeJsonArrayListProperties, InMemoryArrayList, OnDiskArrayList, makeSqgFromJsonSqg
+from pysqg.jsonSqg import makeJsonSqgProperties, makeJsonArrayListProperties, makeSqgFromJsonSqg
+from pysqg.arrayList import InMemoryArrayList, OnDiskArrayList
 
 def mongoDBWrite(sqg, database):
     """Pushes an sqg into a database

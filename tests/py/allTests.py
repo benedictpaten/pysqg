@@ -2,7 +2,7 @@ import unittest
 import sys
 import pysqg.tests.py.networkXTest
 import pysqg.tests.py.numpyTest
-from sonLib.bioio import parseSuiteTestOptions
+from pysqg.bioio import parseSuiteTestOptions
 
 def allSuites(): 
     return unittest.TestSuite((unittest.makeSuite(pysqg.tests.py.networkXTest.TestCase, 'test'),

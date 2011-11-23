@@ -1,7 +1,7 @@
 import unittest
 import sys
 from pysqg.tests import allTests
-from sonLib.bioio import parseSuiteTestOptions
+from pysqg.bioio import parseSuiteTestOptions
 
 def allSuites(): 
     return unittest.TestSuite((allTests.allSuites(),))

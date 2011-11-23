@@ -1,8 +1,8 @@
 import unittest
 import os
-from sonLib.bioio import getTempFile
-from pysqg.sqg import InMemoryArrayList, OnDiskArrayList, readJsonSqgFile, writeJsonSqgFile
-
+from pysqg.bioio import getTempFile
+from pysqg.arrayList import InMemoryArrayList, OnDiskArrayList
+from pysqg.jsonSqg import readJsonSqgFile, writeJsonSqgFile
 from pysqg.tests.abstractTests import AbstractTestCase
 
 class TestCase(AbstractTestCase):
@@ -31,7 +31,7 @@ class TestCase(AbstractTestCase):
         self.graphs = ((self.makeGraph(InMemoryArrayList), self.makeGraph(fn3), fn4(self.makeGraph(InMemoryArrayList)), fn4(self.makeGraph(fn3))))
 
 def main():
-    from sonLib.bioio import parseSuiteTestOptions
+    from pysqg.bioio import parseSuiteTestOptions
     import sys
     parseSuiteTestOptions()
     sys.argv = sys.argv[:1]

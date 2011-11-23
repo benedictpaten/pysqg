@@ -1,8 +1,9 @@
 import unittest
 import os
 import json
-from sonLib.bioio import logger, getTempFile
-from pysqg.sqg import readJsonSqgFile, writeJsonSqgFile, getPysqgIncludeDir
+from pysqg.bioio import logger, getTempFile
+from pysqg.jsonSqg import readJsonSqgFile, writeJsonSqgFile
+from pysqg.shared import getPysqgIncludeDir
 
 class TestCase(unittest.TestCase):  
     def setUp(self):
@@ -31,7 +32,7 @@ class TestCase(unittest.TestCase):
             readJsonSqgFile(self.tempFile)
         
 def main():
-    from sonLib.bioio import parseSuiteTestOptions
+    from pysqg.bioio import parseSuiteTestOptions
     import sys
     parseSuiteTestOptions()
     sys.argv = sys.argv[:1]
