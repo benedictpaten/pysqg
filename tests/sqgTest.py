@@ -1,7 +1,7 @@
 import unittest
 import os
 from sonLib.bioio import getTempFile, system
-from pysqg.sqg import SQG, InMemoryArrayList, OnDiskArrayList, jsonRead, jsonWrite
+from pysqg.sqg import Sqg, InMemoryArrayList, OnDiskArrayList, readJsonSqgFile, writeJsonSqgFile
 
 class TestCase(unittest.TestCase):
     def setUp(self):
@@ -22,7 +22,7 @@ class TestCase(unittest.TestCase):
             return OnDiskArrayList(file=tempFile, type=type)
         
         def fn2(arrayListConstructor):
-            sqg = SQG(includes=self.graphIncludes, name=self.sqgName, parents=self.parents, sharedVariables=self.sharedVariables)
+            sqg = Sqg(includes=self.graphIncludes, name=self.sqgName, parents=self.parents, sharedVariables=self.sharedVariables)
             
             def fn(type, arrayNames, arrays):
                 """Write the arrays into an array list
@@ -51,12 +51,8 @@ class TestCase(unittest.TestCase):
             sqg, graph = i
             tempFile = getTempFile(rootDir=os.getcwd())
             self.tempFiles.append(tempFile)
-            fileHandle = open(tempFile, 'w')
-            jsonWrite(sqg, fileHandle)
-            fileHandle.close()
-            fileHandle = open(tempFile, 'r')
-            sqg = jsonRead(fileHandle)
-            fileHandle.close()
+            writeJsonSqgFile(sqg, tempFile)
+            sqg = readJsonSqgFile(tempFile)
             return sqg, graph
          
         self.graphs = (fn2(InMemoryArrayList), fn2(fn3), fn4(fn2(InMemoryArrayList)), fn4(fn2(fn3)))
@@ -65,27 +61,27 @@ class TestCase(unittest.TestCase):
         for tempFile in self.tempFiles:
             os.remove(tempFile)
         
-    def testSQG_getIncludes(self):
+    def testSqg_getIncludes(self):
         for sqg, graph in self.graphs:
             self.assertEqual(sqg.getIncludes(), self.graphIncludes)
         
-    def testSQG_getName(self):
+    def testSqg_getName(self):
         for sqg, graph in self.graphs:
             self.assertEqual(sqg.getName(), self.sqgName)
     
-    def testSQG_getParents(self):
+    def testSqg_getParents(self):
         for sqg, graph in self.graphs:
             self.assertEqual(sqg.getParents(), self.parents)
         
-    def testSQG_getSharedVariables(self):
+    def testSqg_getSharedVariables(self):
         for sqg, graph in self.graphs:
             self.assertEqual(sqg.getSharedVariables(), self.sharedVariables)
     
-    def testSQG_getArrayLists(self):
+    def testSqg_getArrayLists(self):
         for sqg, graph in self.graphs:
             self.assertEqual(dict([ (type, arrayList.getType()) for type, arrayList in sqg.getArrayLists().items() ]), dict([ (type, arrayList.getType()) for type, inherits, arrayNames, arrayTypes, array, sharedVariables, arrayList in graph ]))
     
-    def testSQG_getArrayList(self):
+    def testSqg_getArrayList(self):
         for sqg, graph in self.graphs:
             for type, inherits, arrayNames, arrayTypes, array, sharedVariables, arrayList in graph:
                 self.assertEqual(sqg.getArrayList(type).getType(), arrayList.getType())

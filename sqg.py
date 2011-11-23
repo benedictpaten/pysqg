@@ -1,20 +1,21 @@
-"""Core functions working with SQGs
+"""Core functions working with Sqgs
 """
 import os.path
 import json
 from sonLib.bioio import logger
 
-
-def jsonSQGProperties(sqg):
-    jsonSQG = { "include":sqg.getIncludes(), 
+def makeJsonSqgProperties(sqg):
+    """Build the sqg object sans array lists
+    """
+    jsonSqg = { "include":sqg.getIncludes(), 
                "parents":sqg.getParents(), "sharedVariables":sqg.getSharedVariables(),
                 }
     if sqg.getName() != None:
-        jsonSQG["name"] = sqg.getName()
-    return jsonSQG
+        jsonSqg["name"] = sqg.getName()
+    return jsonSqg
 
-def jsonArrayListProperties(arrayList):
-    """Build the properties
+def makeJsonArrayListProperties(arrayList):
+    """Build the json properties object for an array list.
     """
     jsonProperties = {}
     sharedVariables = arrayList.getSharedVariables()
@@ -34,45 +35,56 @@ def jsonArrayListProperties(arrayList):
     jsonProperties["variables"] = flatVariables
     return jsonProperties
 
-def jsonWrite(sqg, fileHandle):
-    jsonSQG = jsonSQGProperties(sqg)
+def makeJsonSqgFromSqg(sqg):
+    jsonSqg = makeJsonSqgProperties(sqg)
     
     #Add the arraylists in a hacky way, currently
     for arrayListType, arrayList in sqg.getArrayLists().items():
-        jsonSQG[arrayListType] = [ jsonArrayListProperties(arrayList) ]
+        jsonSqg[arrayListType] = [ makeJsonArrayListProperties(arrayList) ]
         if isinstance(arrayList, InMemoryArrayList):
-            jsonSQG[arrayListType].append(arrayList._array)
+            jsonSqg[arrayListType].append(arrayList._array)
         else:
-            jsonSQG[arrayListType].append(None)
-            jsonSQG[arrayListType].append(arrayList.file)
-        
-    json.dump(jsonSQG, fileHandle)
-
-def jsonRead(fileHandle):
-    jsonSQG = json.load(fileHandle)
+            jsonSqg[arrayListType].append(None)
+            jsonSqg[arrayListType].append(arrayList.file)
     
+    return jsonSqg
+
+def readJsonSqgFile(sqgFile):
+    fileHandle = open(sqgFile, 'r')
+    jsonSqg = json.load(fileHandle)
+    sqg = makeSqgFromJsonSqg(jsonSqg)
+    fileHandle.close()
+    return sqg
+
+def writeJsonSqgFile(sqg, sqgFile):
+    fileHandle = open(sqgFile, 'w')
+    jsonSqg = makeJsonSqgFromSqg(sqg)
+    json.dump(jsonSqg, fileHandle)
+    fileHandle.close()
+
+def makeSqgFromJsonSqg(jsonSqg):
     #Fn to parse out variables from top level json
     def fn(name, defaultObj):
         obj = defaultObj
-        if name in jsonSQG:
-            obj = jsonSQG[name]
+        if name in jsonSqg:
+            obj = jsonSqg[name]
             assert isinstance(obj, defaultObj.__class__)
         return obj
     
     name = None
-    if "name" in jsonSQG:
-        name = int(jsonSQG["name"])
+    if "name" in jsonSqg:
+        name = int(jsonSqg["name"])
     
-    sqg = SQG(includes=fn("include", []), 
+    sqg = Sqg(includes=fn("include", []), 
               name=name, 
               parents=fn("parents", []), 
               sharedVariables=fn("sharedVariables", {}))
     
-    arrayListTypes = [ arrayListType for arrayListType in jsonSQG.keys() if arrayListType not in \
+    arrayListTypes = [ arrayListType for arrayListType in jsonSqg.keys() if arrayListType not in \
                       ("name", "include", "parents", "sharedVariables") ]
     while len(arrayListTypes) > 0:
         arrayListType = arrayListTypes.pop()
-        jsonArrayList = jsonSQG[arrayListType]
+        jsonArrayList = jsonSqg[arrayListType]
         assert isinstance(jsonArrayList, [].__class__)
         properties = jsonArrayList[0]
         
@@ -121,12 +133,9 @@ def getPysqgIncludeDir():
 def parseInclude(include):
     includeFile = os.path.join(getPysqgIncludeDir(), include + ".json")
     logger.debug("Going to parse the include file: %s", includeFile)
-    fileHandle = open(includeFile, 'r') 
-    sqg = jsonRead(fileHandle)
-    fileHandle.close()
-    return sqg
+    return readJsonSqgFile(includeFile)
 
-class SQG:
+class Sqg:
     parsedIncludes = set()
     
     def __init__(self, includes, name=None, parents=None, sharedVariables=None):
@@ -141,11 +150,11 @@ class SQG:
         else:
             self.includes = includes
         for include in self.includes:
-            if include not in SQG.parsedIncludes:
+            if include not in Sqg.parsedIncludes:
                 graphType = parseInclude(include)
                 if graphType == None:
                     raise RuntimeError("Could not find the following include: %s" % self.includes[i])
-                SQG.parsedIncludes.add(include)
+                Sqg.parsedIncludes.add(include)
         
         #Set the parents
         if parents == None:
@@ -181,7 +190,7 @@ class SQG:
     
     def setArrayList(self, arrayList):
         if arrayList.getType() in self.arrayLists:
-            raise RuntimeError("Trying to set an array list of type %s for an SQG which already has such an array list type" % arrayList.type)
+            raise RuntimeError("Trying to set an array list of type %s for an Sqg which already has such an array list type" % arrayList.type)
         self.arrayLists[arrayList.getType()] = arrayList
 
 class AbstractArrayList:

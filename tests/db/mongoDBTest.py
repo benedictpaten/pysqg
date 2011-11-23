@@ -1,4 +1,7 @@
 import unittest
+import pymongo
+
+from pysqg.dbs.mongoDB import mongoDBWrite, mongoDBRead
 
 class TestCase(unittest.TestCase):
     def setup(self):
@@ -6,6 +9,11 @@ class TestCase(unittest.TestCase):
     
     def teardown(self):
         pass
+    
+    def testMongoDBWriteAndRead(self):
+        """Writes an example graph into mongo DB, then extracts it back out.
+        """
+        
 
 def main():
     from sonLib.bioio import parseSuiteTestOptions
