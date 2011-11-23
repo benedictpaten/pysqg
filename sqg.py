@@ -4,37 +4,42 @@ import os.path
 import json
 from sonLib.bioio import logger
 
-def jsonWrite(sqg, fileHandle):
+
+def jsonSQGProperties(sqg):
     jsonSQG = { "include":sqg.getIncludes(), 
                "parents":sqg.getParents(), "sharedVariables":sqg.getSharedVariables(),
                 }
     if sqg.getName() != None:
         jsonSQG["name"] = sqg.getName()
+    return jsonSQG
+
+def jsonArrayListProperties(arrayList):
+    """Build the properties
+    """
+    jsonProperties = {}
+    sharedVariables = arrayList.getSharedVariables()
+    variables = zip(arrayList.getArrayNames(), arrayList.getArrayTypes())
+    if arrayList.getInherits() != None:
+        parentArrayList = arrayList.getInherits()
+        jsonProperties["inherits"] = arrayList.getInherits().getType()
+        variables = variables[-parentArrayList.getArrayWidth():]
+        for key, value in parentArrayList.getSharedVariables().items():
+            if key in sharedVariables and sharedVariables[key] == value:
+                sharedVariables.pop(key)
+    jsonProperties["sharedVariables"] = arrayList.getSharedVariables()
+    flatVariables = []
+    for i, j in variables:
+        flatVariables.append(i)
+        flatVariables.append(j)
+    jsonProperties["variables"] = flatVariables
+    return jsonProperties
+
+def jsonWrite(sqg, fileHandle):
+    jsonSQG = jsonSQGProperties(sqg)
     
-    def propertiesFn(arrayList):
-        """Build the properties
-        """
-        jsonProperties = {}
-        sharedVariables = arrayList.getSharedVariables()
-        variables = zip(arrayList.getArrayNames(), arrayList.getArrayTypes())
-        if arrayList.getInherits() != None:
-            parentArrayList = arrayList.getInherits()
-            jsonProperties["inherits"] = arrayList.getInherits().getType()
-            variables = variables[-parentArrayList.getArrayWidth():]
-            for key, value in parentArrayList.getSharedVariables().items():
-                if key in sharedVariables and sharedVariables[key] == value:
-                    sharedVariables.pop(key)
-        jsonProperties["sharedVariables"] = arrayList.getSharedVariables()
-        flatVariables = []
-        for i, j in variables:
-            flatVariables.append(i)
-            flatVariables.append(j)
-        jsonProperties["variables"] = flatVariables
-        return jsonProperties
-        
     #Add the arraylists in a hacky way, currently
     for arrayListType, arrayList in sqg.getArrayLists().items():
-        jsonSQG[arrayListType] = [ propertiesFn(arrayList) ]
+        jsonSQG[arrayListType] = [ jsonArrayListProperties(arrayList) ]
         if isinstance(arrayList, InMemoryArrayList):
             jsonSQG[arrayListType].append(arrayList._array)
         else:
@@ -267,7 +272,7 @@ class AbstractArrayList:
         raise RuntimeError("Calling an abstract method")
     
     def addDict(self, dict):
-        raise RuntimeError("Calling an abstract method")
+        raise RuntimeError("Calling an abstract method")  
     
     def __iter__(self):
         raise RuntimeError("Calling an abstract method")
