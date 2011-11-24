@@ -124,7 +124,7 @@ class InMemoryArrayList(AbstractArrayList):
     def _typeVariable(self, variable, type):
         #Not sure this is the right behaviour yet
         if type == "string":
-            return string(variable)
+            return str(variable)
         elif type == "int":
             return int(variable)
         elif type == "float":

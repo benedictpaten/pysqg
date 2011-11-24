@@ -14,8 +14,8 @@ Providing that git is installed, running the following command::
 will download the latest stable (master) branch of pysqg, creating a ``pysqg`` directory in the 
 current working directory.
 
-Locating and testing pysqg
---------------------------
+Setting up and testing pysqg
+----------------------------
 
 To use pysqg you will need Python (http://python.org/) installed. It will work with Python 2.7, but
 will also probably work with earlier versions of python.
