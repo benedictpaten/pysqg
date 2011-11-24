@@ -1,6 +1,8 @@
 Module Documentation
 ====================
 
+Describe the two main modules
+
 Some text, *italic text*, **bold text**
  
 * bulleted list.  There needs to be a space right after the "*"
@@ -30,3 +32,5 @@ And now we're at the *end*
 .. toctree::
 
    modules/jsonSqg.rst
+   
+And now we're at the *end*

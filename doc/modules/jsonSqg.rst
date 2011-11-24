@@ -1,4 +1,4 @@
-Module Documentation
+Json Module
 ====================
 
 Some text, *italic text*, **bold text**

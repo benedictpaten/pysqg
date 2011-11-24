@@ -1,5 +1,40 @@
-Quick Tutorial
-==============
+Quick Start Installation and Tutorial
+=====================================
+
+Quick start to installation
+	
+	* Getting code (links to github)
+	* Setting python path
+	* Installing dependencies
+	* Testing code
+
+Describe basic idea
+	
+	* Everything graph
+	* Graph primitives as arrays
+	* Hierarchy of graphs
+
+Describe basic sqg data structure
+
+	* Show how to make one
+	
+Describe basic array list structure
+
+	* Show how to make one
+	
+Describe basic iteration
+
+Describe loading from json
+
+Describe writing to json
+
+Show loading/writing to mongoDB
+
+Show loading/writing to networkX
+
+Show loading/writing to numpy
+
+Point to examples
 
 Some text, *italic text*, **bold text**
  

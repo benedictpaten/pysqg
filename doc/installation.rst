@@ -1,5 +1,5 @@
-ArrayList Class
-====================
+Installation
+============
 
 Some text, *italic text*, **bold text**
  
@@ -13,13 +13,3 @@ Here's some Python code:
  
 >>> for i in range(10):
 ...     print i
-
-
-.. toctree::
-   
-.. automodule:: arrayList
-
-.. autoclass:: AbstractArrayList
-	:members:
-	
-And now we're at the *end*

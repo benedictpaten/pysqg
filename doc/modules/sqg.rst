@@ -1,4 +1,4 @@
-Module Documentation
+SQG Class
 ====================
 
 Some text, *italic text*, **bold text**
