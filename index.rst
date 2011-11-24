@@ -12,7 +12,7 @@ is the file format, based upon the JSON format
 (http://www.json.org/), and the set of tools that we have implemented to interface with it.
 
 Sqg is designed to represent hierarchically **many** graphs commonly used to represent DNA molecules. 
-As such we would like it to act as a superset format, enabling us to create a veritable Rosetta Stone through which existing formats
+As such we would like it to act as a superset format, enabling us to create a Rosetta Stone through which existing formats
 might be converted. 
 
 The Sqg format and pysqg package have been designed to be: 

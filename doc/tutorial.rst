@@ -1,12 +1,8 @@
-Quick Start Installation and Tutorial
-=====================================
+Tutorial
+========
 
-Quick start to installation
-	
-	* Getting code (links to github)
-	* Setting python path
-	* Installing dependencies
-	* Testing code
+Overview
+--------
 
 Describe basic idea
 	
