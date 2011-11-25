@@ -4,13 +4,13 @@ from pymongo import Connection
 from pysqg.bioio import getTempFile
 from pysqg.dbs.mongoDB import mongoDBWrite, mongoDBRead
 from pysqg.arrayList import InMemoryArrayList
-from pysqg.tests.abstractTests import AbstractTestCase
+import pysqg.tests.abstractTests as abstractTests
 
-class TestCase(AbstractTestCase):
+class TestCase(abstractTests.AbstractTestCase):
     def setUp(self):
         """Constructs a simple graph to writes it into mongodb then reads it back out.
         """
-        AbstractTestCase.setUp(self)
+        abstractTests.AbstractTestCase.setUp(self)
         sqg, graph = self.makeGraph(InMemoryArrayList)
         connection = Connection()
         database = connection["sqg"]
@@ -20,6 +20,9 @@ class TestCase(AbstractTestCase):
             self.tempFiles.append(tempFile)
             return tempFile
         self.graphs = ((mongoDBRead(database), graph), (mongoDBRead(database, tempFileGenerator=fn), graph))
+        
+    def teardown(self):
+        abstractTests.AbstractTestCase.tearDown(self)
 
 def main():
     from pysqg.bioio import parseSuiteTestOptions

@@ -200,10 +200,39 @@ node1 11 node2 1 overlap 0
 Shows how it is possible to iterate through the adjacency edges of the Sqg.
 To convert the arrayList into the JSON based SQG format
 
-Subgraphs as Walks
-------------------
+Subgraphs
+---------
 
-Todo. Define subgraph type and show walks.
+The last major type of ArrayList that we have defined in SQG (so far) represents a subgraph
+of an SQG graph. There are several types already defined in the hierarchy, for example:
+
+>>> mixedSubgraphs = InMemoryArrayList(type="mixedSubgraph")
+
+Which defines a mixed subgraph, allowing for both directed and undirected edges,
+both of which are defined as types. To determine the types of edges
+
+>>> mixedSubgraphs.getSharedVariables()
+{u'edges': [u'edge', u'directedEdge']}
+
+>>> mixedSubgraphs.getArrayNames()
+('subgraphName', 'nodes')
+>>> mixedSubgraphs.getArrayTypes()
+('int', 'array')
+
+
+To illustrate this we 
+
+>>> walks = InMemoryArrayList(type="walk", inherits="mixedSubgraph",\
+ variables=[ "start", "int", "stop", "int" ])
+>>> walks.getArrayNames()
+('subgraphName', 'nodes', 'start', 'stop')
+>>> walks.getArrayTypes()
+('int', 'array', 'int', 'int')
+ 
+>>> walks.addDict({ "subgraphName":0, "nodes":\
+[ _1, aL, aR, b1L, b1R, b1L, b1R, cR, cL, b2R, b2L, cL, cR, dL, dR, _2 ], "start":0, "stop":0 })
+>>> walks.addDict({ "subgraphName":1, "nodes":\
+[ aL, aR, b1L, b1R, b1L, b1R, cR, cL, b2L, b2R, cL, cR, dL, dR ], "start":3, "stop":10 })
 
 
 Reading and writing SQG files
@@ -212,28 +241,46 @@ Reading and writing SQG files
 To convert the ``sqg`` object into a SQG file we use an associated conversion function:
 
 >>> from pysqg.jsonSqg import makeJsonSqgFromSqg
->>> jsonSqg = makeJsonSqgFromSqg(sqg)
->>> print jsonSqg
-{'node': [{'sharedVariables': {}, 'variables': ['nodeName', 'int']}, \
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]], 'multiLabelledSegment': \
-[{'inherits': 'multiSegment', 'sharedVariables': {}, 'variables': \
+>>> makeJsonSqgFromSqg(sqg)
+{'node': [{'sharedVariables': {}, 'variables': ['nodeName', 'int']}, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]], \
+'multiLabelledSegment': [{'inherits': 'multiSegment', 'sharedVariables': {}, 'variables': \
+['inNode', 'int', 'degree', 'float', 'length', 'int', 'sequence', 'string']}, [], './segmentEdges'], \
+'overlapAdjacency': [{'inherits': 'adjacency', 'sharedVariables': {}, 'variables': \
+['node2', 'int', 'overlap', 'int']}, [], './adjacencyEdges'], 'walk': \
+[{'inherits': 'mixedSubgraph', 'sharedVariables': {u'edges': [u'edge', u'directedEdge']}, \
+'variables': ['start', 'int', 'stop', 'int']}, [0, [0, 2, 3, 4, 5, 4, 5, 9, 8, 7, 6, 8, 9, 10, 11, 1], \
+0, 0, 1, [2, 3, 4, 5, 4, 5, 9, 8, 6, 7, 8, 9, 10, 11], 3, 10]], 'sharedVariables': \
+{'Date': '24/11/2011', 'Created': "Assemblathon File Format Working Group using Richard Durbin's example"}, \
+'parents': [], 'include': ['ungappedOverlapGraph']}
+ 
+You will notice that the definition of the type of each ArrayList is included in the file.
+Shortly this will change, so that the definition is excluded if the type of the ArrayList
+can be found in a graph defined in the include hierarchy.
+
+If we want to 'flatten' the sqg to include the on disk arrays (i.e. not have them 
+stored in a separate file) then we can:
+
+>>> makeJsonSqgFromSqg(sqg, putOnDiskArraysInJsonSqg=True)
+{'node': [{'sharedVariables': {}, 'variables': ['nodeName', 'int']}, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]], \
+'multiLabelledSegment': [{'inherits': 'multiSegment', 'sharedVariables': {}, 'variables': \
 ['inNode', 'int', 'degree', 'float', 'length', 'int', 'sequence', 'string']}, \
-[3, 2, 1.0, 10, 'acggtcagca', 5, 4, 2.0, 6, 'catact', 7, 6, 1.0, 6, 'cgtact', \
-9, 8, 2.0, 8, 'ggactcta', 11, 10, 1.0, 10, 'agcgtgcata']], 'overlapAdjacency': \
-[{'inherits': 'adjacency', 'sharedVariables': {}, 'variables': \
-['node2', 'int', 'overlap', 'int']}, []], 'sharedVariables': \
-{'Date': '24/11/2011', 'Created': "Assemblathon File Format Working Group \
-using Richard Durbin's example"}, 'parents': [], 'include': ['ungappedOverlapGraph']}
+[3, 2, 1.0, 10, 'acggtcagca', 5, 4, 2.0, 6, 'catact', 7, 6, 1.0, 6, 'cgtact', 9, 8, 2.0, 8, 'ggactcta', \
+11, 10, 1.0, 10, 'agcgtgcata']], 'overlapAdjacency': [{'inherits': 'adjacency', 'sharedVariables': {}, \
+'variables': ['node2', 'int', 'overlap', 'int']}, [0, 2, -1, 3, 4, -2, 5, 4, 0, 5, 9, -1, 8, 7, 0, 6, 8, \
+-1, 9, 10, -1, 11, 1, 0]], 'walk': [{'inherits': 'mixedSubgraph', 'sharedVariables': {u'edges': \
+[u'edge', u'directedEdge']}, 'variables': ['start', 'int', 'stop', 'int']}, [0, [0, 2, 3, 4, 5, 4, 5, 9, \
+8, 7, 6, 8, 9, 10, 11, 1], 0, 0, 1, [2, 3, 4, 5, 4, 5, 9, 8, 6, 7, 8, 9, 10, 11], 3, 10]], 'sharedVariables': \
+{'Date': '24/11/2011', 'Created': "Assemblathon File Format Working Group using Richard Durbin's example"},\
+ 'parents': [], 'include': ['ungappedOverlapGraph']}
 
-More conveient functions to write (and read) directly to (and from) SQG files 
-are also available.
-
-To do the reverse, and load an sqg object from an SQG file representation is also simple.
+To do the reverse, to load an sqg object from an SQG file representation, is also simple.
 
 >>> from pysqg.jsonSqg import makeJsonSqgFromSqg
->>> sqg2 = makeSqgFromJsonSqg(jsonSqg)
->>> print sqg2
+>>> makeSqgFromJsonSqg(jsonSqg)
 <pysqg.sqg.Sqg instance at 0x1086bd7e8>
+
+More convenient functions to write (and read) directly to (and from) SQG files 
+are also available.
 
 More Advanced Conversions
 -------------------------
@@ -243,7 +290,6 @@ of different databses, file formats and graph and numerical programming packages
 
 In the examples chapter you will examples using MongoDB, Numpy and NetworkX and
 conversions to and from the FastG and VCF formats.
-
 
 Hierarchy
 -------------------------

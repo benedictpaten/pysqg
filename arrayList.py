@@ -184,11 +184,11 @@ class OnDiskArrayList(InMemoryArrayList):
     def __init__(self, file, type, inherits=None, sharedVariables=None, variables=None, bufferSize=100000):
         InMemoryArrayList.__init__(self, type, inherits, sharedVariables, variables)
         self.file = file
-        self.fileHandleWrite = open(file, "a")
         self.bufferSize = bufferSize
+        open(self.file, "a").close() #Ensure file exists
         
     def __del__(self):
-        self.close()
+        self.flush()
         
     def addArray(self, array):
         InMemoryArrayList.addArray(self, array)
@@ -198,27 +198,23 @@ class OnDiskArrayList(InMemoryArrayList):
     def flush(self):
         """Pushes all values in the array onto disk
         """
-        for array in InMemoryArrayList._iter(self):
-            json.dump(array, self.fileHandleWrite)
-            self.fileHandleWrite.write("\n")
-        self.fileHandleWrite.flush()
-        self._array = []
-    
-    def close(self):
-        """Flushes and closes the array list. Any subsequent adds will cause a failure.
-        """
-        self.flush()
-        self.fileHandleWrite.close()
+        if len(self._array) > 0:
+            fileHandle = open(self.file, "a")
+            for array in InMemoryArrayList._iter(self):
+                json.dump(array, fileHandle)
+                fileHandle.write("\n")
+            fileHandle.close()
+            self._array = []
     
     class _iter2():
         def __init__(self, arrayList):
             self.arrayList = arrayList
-            self.fileHandleRead = open(arrayList.file, 'r')
+            self.fileHandle = open(arrayList.file, 'r')
     
         def next(self):
-            line = self.fileHandleRead.readline()
+            line = self.fileHandle.readline()
             if line == '':
-                self.fileHandleRead.close()
+                self.fileHandle.close()
                 raise StopIteration
             arrayTypes = self.arrayList.getArrayTypes()
             array = json.loads(line)
@@ -227,7 +223,7 @@ class OnDiskArrayList(InMemoryArrayList):
             return [ self.arrayList._typeVariable(array[i], arrayTypes[i]) for i in xrange(len(array)) ]
         
         def __del__(self):
-            self.fileHandleRead.close()
+            self.fileHandle.close()
     
     def __iter__(self):
         self.flush()

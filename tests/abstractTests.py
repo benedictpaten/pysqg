@@ -1,9 +1,9 @@
 import unittest
 import os
 from pysqg.sqg import Sqg
+from pysqg.arrayList import OnDiskArrayList
 
 class AbstractTestCase(unittest.TestCase):
-    
     def makeGraph(self, arrayListConstructor):
         sqg = Sqg(includes=self.graphIncludes, name=self.sqgName, parents=self.parents, sharedVariables=self.sharedVariables)
         
@@ -38,6 +38,7 @@ class AbstractTestCase(unittest.TestCase):
         self.tempFiles = []
     
     def tearDown(self):
+        self.graphs = []
         for tempFile in self.tempFiles:
             os.remove(tempFile)
         

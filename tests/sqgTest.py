@@ -3,13 +3,13 @@ import os
 from pysqg.bioio import getTempFile
 from pysqg.arrayList import InMemoryArrayList, OnDiskArrayList
 from pysqg.jsonSqg import readJsonSqgFile, writeJsonSqgFile
-from pysqg.tests.abstractTests import AbstractTestCase
+import pysqg.tests.abstractTests as abstractTests
 
-class TestCase(AbstractTestCase):
+class TestCase(abstractTests.AbstractTestCase):
     def setUp(self):
         """Constructs a simple graph to test, testing json parsing in and out..
         """
-        AbstractTestCase.setUp(self)
+        abstractTests.AbstractTestCase.setUp(self)
         
         def fn3(type):
             """Make a an on disk array list
@@ -18,17 +18,22 @@ class TestCase(AbstractTestCase):
             self.tempFiles.append(tempFile)
             return OnDiskArrayList(file=tempFile, type=type)
         
-        def fn4(i):
+        def fn4(i, putOnDiskArraysInJsonSqg=False):
             """Write and then re-read the sqg in a temporary file
             """
             sqg, graph = i
             tempFile = getTempFile(rootDir=os.getcwd())
             self.tempFiles.append(tempFile)
-            writeJsonSqgFile(sqg, tempFile)
+            writeJsonSqgFile(sqg, tempFile, putOnDiskArraysInJsonSqg=putOnDiskArraysInJsonSqg)
             sqg = readJsonSqgFile(tempFile)
             return sqg, graph
          
-        self.graphs = ((self.makeGraph(InMemoryArrayList), self.makeGraph(fn3), fn4(self.makeGraph(InMemoryArrayList)), fn4(self.makeGraph(fn3))))
+        self.graphs = ((self.makeGraph(InMemoryArrayList), self.makeGraph(fn3), 
+                        fn4(self.makeGraph(InMemoryArrayList)), fn4(self.makeGraph(fn3)),
+                        fn4(self.makeGraph(fn3), True)))
+    
+    def tearDown(self):
+        abstractTests.AbstractTestCase.tearDown(self)
 
 def main():
     from pysqg.bioio import parseSuiteTestOptions

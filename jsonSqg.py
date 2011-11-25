@@ -9,7 +9,7 @@ from pysqg.arrayList import InMemoryArrayList, OnDiskArrayList
 #Generally useful functions
 #################
 
-def makeJsonSqgFromSqg(sqg):
+def makeJsonSqgFromSqg(sqg, putOnDiskArraysInJsonSqg=False):
     """Make json-sqg from sqg object
     """
     jsonSqg = makeJsonSqgProperties(sqg)
@@ -17,12 +17,18 @@ def makeJsonSqgFromSqg(sqg):
     #Add the arraylists in a hacky way, currently
     for arrayListType, arrayList in sqg.getArrayLists().items():
         jsonSqg[arrayListType] = [ makeJsonArrayListProperties(arrayList) ]
-        if isinstance(arrayList, InMemoryArrayList):
-            jsonSqg[arrayListType].append(arrayList._array)
+        if isinstance(arrayList, OnDiskArrayList):
+            if putOnDiskArraysInJsonSqg:
+                flatArray = []
+                for array in arrayList:
+                    flatArray += array
+                jsonSqg[arrayListType].append(flatArray)
+            else:
+                jsonSqg[arrayListType].append([])
+                jsonSqg[arrayListType].append(arrayList.file)
         else:
-            jsonSqg[arrayListType].append(None)
-            jsonSqg[arrayListType].append(arrayList.file)
-    
+            jsonSqg[arrayListType].append(arrayList._array)
+
     return jsonSqg
 
 def makeSqgFromJsonSqg(jsonSqg):
@@ -97,11 +103,11 @@ def readJsonSqgFile(sqgFile):
     fileHandle.close()
     return sqg
 
-def writeJsonSqgFile(sqg, sqgFile):
+def writeJsonSqgFile(sqg, sqgFile, putOnDiskArraysInJsonSqg=False):
     """Convenient function to convert sqg file into a json-sqg file
     """
     fileHandle = open(sqgFile, 'w')
-    jsonSqg = makeJsonSqgFromSqg(sqg)
+    jsonSqg = makeJsonSqgFromSqg(sqg, putOnDiskArraysInJsonSqg=putOnDiskArraysInJsonSqg)
     json.dump(jsonSqg, fileHandle)
     fileHandle.close()
     
