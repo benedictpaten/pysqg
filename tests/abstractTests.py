@@ -79,6 +79,15 @@ class AbstractTestCase(unittest.TestCase):
                     self.assertEqual(arrayList.getInherits(), None)
                 else:
                     self.assertEqual(arrayList.getInherits().getType(), inherits)
+                    
+    def testArrayList_inheritsFrom(self):
+        for sqg, graph in self.graphs:
+            for type, inherits, arrayNames, arrayTypes, array, sharedVariables, arrayList in graph:
+                i = arrayList
+                while i != None:
+                    self.assertTrue(arrayList.inheritsFrom(i.getType()))
+                    i = i.getInherits()
+                self.assertFalse(arrayList.inheritsFrom("anythingElse"))
     
     def testArrayList_getSharedVariables(self):
         for sqg, graph in self.graphs:

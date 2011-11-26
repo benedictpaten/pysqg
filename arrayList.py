@@ -6,7 +6,7 @@ import json
 class AbstractArrayList:
     """Basic array list class
     """
-    arrayListTypes = {} #This static set holds the set of array list types included, as abstract array lists.
+    _arrayListTypes = {} #This static set holds the set of array list types included, as abstract array lists.
     
     def __init__(self, type, inherits=None, sharedVariables=None, variables=None):
         if type == None:
@@ -14,12 +14,12 @@ class AbstractArrayList:
         type = str(type)
         self.type = type
         
-        if self.type not in AbstractArrayList.arrayListTypes:
+        if self.type not in AbstractArrayList._arrayListTypes:
             if inherits != None:
-                if inherits not in AbstractArrayList.arrayListTypes:
+                if inherits not in AbstractArrayList._arrayListTypes:
                     raise RuntimeError("Trying to inherit from an array list type not yet seen: %s %s" % (inherits, type))
                 else:
-                    baseSharedVariables, baseVariables = AbstractArrayList.arrayListTypes[inherits][:2]
+                    baseSharedVariables, baseVariables = AbstractArrayList._arrayListTypes[inherits][:2]
                     if sharedVariables == None:
                         sharedVariables = baseSharedVariables
                     else:
@@ -53,12 +53,12 @@ class AbstractArrayList:
             if sharedVariables == None:
                 sharedVariables = {}
             
-            AbstractArrayList.arrayListTypes[self.type] = (sharedVariables, variables, arrayNames, arrayTypes, inherits, self)
+            AbstractArrayList._arrayListTypes[self.type] = (sharedVariables, variables, arrayNames, arrayTypes, inherits, self)
             #Replace reference with abstract version of class, so that getInherits retrieves abstract version of class
-            AbstractArrayList.arrayListTypes[self.type] = (sharedVariables, variables, arrayNames, arrayTypes, inherits, AbstractArrayList(type, inherits=inherits, sharedVariables=sharedVariables, variables=variables))
+            AbstractArrayList._arrayListTypes[self.type] = (sharedVariables, variables, arrayNames, arrayTypes, inherits, AbstractArrayList(type, inherits=inherits, sharedVariables=sharedVariables, variables=variables))
         else:
             #Check the definition of the array is not being altered
-            existingSharedVariables, existingVariables = AbstractArrayList.arrayListTypes[self.type][:2]
+            existingSharedVariables, existingVariables = AbstractArrayList._arrayListTypes[self.type][:2]
             if sharedVariables != None and existingSharedVariables != sharedVariables:
                 raise RuntimeError("The type of array list is already seen and the shared variables definition is being altered: %s %s" % (existingSharedVariables, sharedVariables))
             if variables != None and existingVariables[-len(variables):] != tuple(variables):
@@ -74,25 +74,35 @@ class AbstractArrayList:
     def getInherits(self):
         """The array list type which this array list inherits from.
         """
-        inherits = AbstractArrayList.arrayListTypes[self.getType()][-2]
+        inherits = AbstractArrayList._arrayListTypes[self.getType()][-2]
         if inherits == None:
             return None
-        return AbstractArrayList.arrayListTypes[inherits][-1]
+        return AbstractArrayList._arrayListTypes[inherits][-1]
+    
+    def inheritsFrom(self, type):
+        """Returns True iff the array list is of the given type or inherits from a ArrayList of a given type
+        """
+        arrayList = self
+        while self != None:
+            if self.getType() == type:
+                return True
+            self = self.getInherits()
+        return False
     
     def getSharedVariables(self):
         """The shared attributes that array lists of this type all share. This is common to all array lists of this type.
         """
-        return AbstractArrayList.arrayListTypes[self.getType()][0].copy()
+        return AbstractArrayList._arrayListTypes[self.getType()][0].copy()
     
     def getArrayNames(self):
         """The names of the variables in each array, listed according to position.
         """
-        return AbstractArrayList.arrayListTypes[self.getType()][2][:]
+        return AbstractArrayList._arrayListTypes[self.getType()][2][:]
     
     def getArrayTypes(self):
         """The types of the variables in each array, list according to position.
         """
-        return AbstractArrayList.arrayListTypes[self.getType()][3][:]
+        return AbstractArrayList._arrayListTypes[self.getType()][3][:]
     
     def getArrayWidth(self):
         """The number of variables in each array.
