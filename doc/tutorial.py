@@ -62,7 +62,7 @@ mixedSubgraphs.getArrayTypes()
 
 mixedSubgraphs.getSharedVariables()
 
-walks = InMemoryArrayList(type="walk", inherits="mixedSubgraph", variables=[ "start", "int", "stop", "int" ])
+walks = InMemoryArrayList(type="walk", inherits="mixedSubgraph", variables=[ "start", "int", "stop", "int" ], sharedVariables={ "edges":[ "segmentEdge", "adjacencyEdge" ] })
 sqg.setArrayList(walks)
 walks.getArrayNames()
 walks.getArrayTypes()

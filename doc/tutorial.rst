@@ -5,13 +5,14 @@ Overview
 --------
 
 In this tutorial we will go through the process of constructing an SQG file.
-The example will build a graph derived from Richard Durbin's original example, and is shown 
-in the following:
+The example will build a graph derived from Richard Durbin's original SQG example. 
+The graph represents an assembly problem and is shown 
+in the following diagram:
 
 .. image:: example1.png
 	:width: 700px
 
-It represents an assembly problem.
+
 The top of the diagram shows subsequences, termed *segments* aligned to an underlying sequence.
 The lower diagram shows an *overlap graph* of the segments and their overlaps, which we
 term *adjacencies*.
@@ -20,23 +21,24 @@ The Sqg Class
 -------------
 
 To construct the containing SQG object we start by importing the ``Sqg`` class and creating
-an instance: 
+an instance of the class: 
 
 >>> from pysqg.sqg import Sqg
 >>> sqg = Sqg(includes=[ "ungappedOverlapGraph" ], \
 ... sharedVariables={ "Created":"Assemblathon File Format Working Group using \
 Richard Durbin's example", "Date":"24/11/2011"})
 
-Both arguments passed to the Sqg constructor are optional. 
+Both arguments passed to the ``Sqg`` constructor are optional. 
 
 The ``includes=[ "ungappedOverlapGraph" ]`` argument takes a list of graph *types*. 
 Like in the C programming
-language they are used to load pre-existing jsonSqg files that contain existing graph 
-definitions.
-For a full list of these graphs see the next chapter.
+language they are used to load pre-existing SQG files that contain definitions of graph 
+types.
+For a full list of these graphs see the following chapters. In this case we use the *ungappedOverlapGraph* type,
+which defines an appropriate graph type for this example.
 
 The *sharedVariables* argument is simply a python dictionary object (hash) used 
-to describe properties of the graph.
+to describe properties of the graph. Here we have simply added date and creation attributes.
 
 The ArrayList Class
 -------------------
@@ -45,53 +47,68 @@ Nodes, edges and subgraphs, the basic structures described by SQG, are
 represented as lists of typed arrays. ArrayLists use an inheritance mechanism
 to allow complex types to be defined hierarchically.
 
-We start by building a list of nodes:
+We start by illustrating the building of a list of nodes:
 
 >>> from pysqg.arrayList import InMemoryArrayList
 >>> nodes = InMemoryArrayList(type="node")
 >>> sqg.setArrayList(nodes)
 
-The basic ArrayList class is defined in the ``pysqg.arrayList.AbstractArrayList``
+The basic ``ArrayList`` class is defined in the ``pysqg.arrayList.AbstractArrayList``
 class. This class is abstract, but inherited ArrayLists, here the ``InMemoryArrayList``,
-allow ArrayLists with specific storage properties. The ``InMemoryArrayList`` used
-here stores, as you would expect, the information it contains in memory.
+allow ArrayLists with specific storage properties. As you might expect, the ``InMemoryArrayList`` used
+here stores the information it contains in memory.
 
-The ``type="node"`` argument, which is required is used to define the type of the
-arrayList. The nodes are added to the sqg object by the ``setArrayList`` function.
-Only one type of a given list is allowed per Sqg instance.
+The ``type="node"`` argument, which is required, is used to define the type of the
+``ArrayList``. The ``nodes`` object is added to the ``sqg`` object by the ``setArrayList`` function.
+Only one type of a given ``ArrayList`` is allowed per ``Sqg`` object.
 
-The list can be retrieved from the sqg object by the following:
+The list can be retrieved from the ``Sqg`` object by the following:
 
 >>> sqg.getArrayList("node")
 <pysqg.arrayList.InMemoryArrayList instance at 0x1086aa7e8>
 
-As you might expect, each node is represented by an array with a single variable:
+As you might expect, each node in ``nodes`` is represented by an array with a single variable, which is 
+assumed to be an integer. To discover this information use can interrogate the ``nodes`` ``ArrayList``. For example:
 
 >>> nodes.getArrayNames()
 ('nodeName',)
 
-Which is assumed to be an integer:
+Gets in order the names of the variables in the ``ArrayList``. While:
 
 >>> nodes.getArrayTypes()
 ('int',)
 
-To start to populate the graph we create the two *stub* nodes _1 and _2, which
-represent boundaries of the graph and are often convenient, for example to represent
-telomeres or more generally missing information.
+Gets in order the types of the variables in the ``ArrayList``.
+
+To start to populate the graph we create the two *stub* nodes *_1* and *_2* in the example, which
+represent boundaries of the graph and are often convenient, for example, to represent
+telomeres or, more generally, missing information.
+
+To add *_1* we can use the ``addArray`` function:
 
 >>> _1 = 0
 >>> nodes.addArray([ _1 ])
+
+Which takes an array of variables whose types must match those of the variables in the ``ArrayList``.
+
+Alternatively, we can use the ``addDict`` function:
+
 >>> _2 = 1
 >>> nodes.addDict({ "nodeName":_2 })
 
-The above fragment shows the two ways to add an array to an ArrayList. Firstly,
-as a list, and secondly as a dictionary (hash).
+Which takes a dictionary object (hash) of *key:value* pairs which are used to define the variables in the array.
+
 
 Edges as more complex ArrayLists
 --------------------------------
 
 The process of adding edges and more complex types to the graph follows exactly
 the same process as the nodes.
+
+Segment Edges
++++++++++++++++
+
+We start by adding the edges representing the segments (subsequences) to the graph.
 
 >>> from pysqg.arrayList import OnDiskArrayList
 >>> segmentEdges = OnDiskArrayList(file="./segmentEdges", type="multiLabelledSegment")
@@ -100,15 +117,24 @@ the same process as the nodes.
 The above fragment loads the ``OnDiskArrayList`` class, which stores the arrays it
 contains on disk, and therefore is suitable where the number of edges is too large to fit
 into memory. The ``file="./segmentEdges"`` required argument specifies the file
-to store the arrayList's contents in. This time the ``type="multiLabelledSegment"`` argument
-specifies the use of more complex arrayList type representing a segment edge:
+to store the arrayList's contents in. 
+
+This time the ``type="multiLabelledSegment"`` argument
+specifies the use of a more complex ArrayList type representing a segment edge. Again,
+we use the ``getArrayNames`` and ``getArrayTypes`` functions to interrogate the object's
+variables:
 
 >>> segmentEdges.getArrayNames()
 ('outNode', 'inNode', 'degree', 'length', 'sequence')
 >>> segmentEdges.getArrayTypes()
 ('int', 'int', 'float', 'int', 'string')
 
-We can now proceed to add the segment edges to the graph.
+You can see that this edge type has an out- and and an in-node, as it is a type of directed edge.
+
+Additionally, it has a degree variable, representing the number of times it occurs in the underlying sequence, a 
+length variable, representing the length of the sequence it represents and an actual sequence, which is stored as a string.
+
+We can now proceed to add the segment edges to the graph:
 
 The *a* segment:
 
@@ -118,8 +144,12 @@ The *a* segment:
 >>> segmentEdges.addDict({ "inNode":aL, "outNode":aR, "length":10, \
 ... "sequence":"acggtcagca", "degree":1 })
 
-Each edge addition involves the creation of two nodes, representing the segment
-ends.
+In the above fragment we:
+	* define the nodes for the edge,
+	* add the two nodes to the ``nodes`` array,
+	* and create a segment edge, in this case of length 10, with the sequence "acggtcagca" and which occurs only once in the underlying sequence.
+
+The remainder of the segment edges are added similarly.
 
 The *b1* segment:
 
@@ -153,6 +183,9 @@ And finally the *d* segment:
 >>> segmentEdges.addDict({ "inNode":dL, "outNode":dR, "length":10, \
 ... "sequence":"agcgtgcata", "degree":1 })
 
+Adjacency Edges
++++++++++++++++
+
 The other edges in the graph represent the *adjacencies*, the connections between
 the ends of the segments. 
 
@@ -160,12 +193,15 @@ the ends of the segments.
 >>> sqg.setArrayList(adjacencyEdges)
 
 Here they are allowed to overlap, hence we use the 
-``overlapAdjacency`` type. The array variables are shown below.
+``overlapAdjacency`` type. The variable's of the array are shown below.
 
 >>> adjacencyEdges.getArrayNames()
 ('node1', 'node2', 'overlap')
 >>> adjacencyEdges.getArrayTypes()
 ('int', 'int', 'int')
+
+This time the edge type is undirected, hence the node variables are not prefixed
+with "in" or "out". 
 
 Given this type we can add the adjacencies to the graph.
 
@@ -180,10 +216,12 @@ Given this type we can add the adjacencies to the graph.
 
 ArrayList objects are purposefully very limited in their abilities, 
 being designed as means to store information but not randomly access it. Rather
-we choose to make it simple to convert sqg instances and their arrayLists into
+we choose to make it simple to convert ``Sqg`` instances and their arrayLists into
 other formats, for example into databases and more complex in memory and on disk storage
-mechanisms that provide such functionality. The key means to access the arrays in an arrayList
-we use iterators. For example:
+mechanisms that provide such functionality. 
+
+The only means to access the arrays in an arrayList
+is to use iterators. For example:
 
 >>> for node1, node2, overlap in adjacencyEdges:
 ...     print "node1", node1, "node2", node2, "overlap", overlap
@@ -197,8 +235,7 @@ node1 6 node2 8 overlap -1
 node1 9 node2 10 overlap -1
 node1 11 node2 1 overlap 0
 
-Shows how it is possible to iterate through the adjacency edges of the Sqg.
-To convert the arrayList into the JSON based SQG format
+Shows how it is possible to iterate through the adjacency edges of the ``Sqg``.
 
 Subgraphs
 ---------
@@ -208,32 +245,63 @@ of an SQG graph. There are several types already defined in the hierarchy, for e
 
 >>> mixedSubgraphs = InMemoryArrayList(type="mixedSubgraph")
 
-Which defines a mixed subgraph, allowing for both directed and undirected edges,
-both of which are defined as types. To determine the types of edges
-
->>> mixedSubgraphs.getSharedVariables()
-{u'edges': [u'edge', u'directedEdge']}
+The simplest possible subgraph (as in this example) is represented using a pair of attributes:
 
 >>> mixedSubgraphs.getArrayNames()
 ('subgraphName', 'nodes')
 >>> mixedSubgraphs.getArrayTypes()
 ('int', 'array')
 
+Firstly a ``subgraphName`` attribute, which is used to identify the subgraph. 
+Secondly, and more importantly, an array that must contain the names of the nodes
+contained in the subgraph.
 
-To illustrate this we 
+By convention, all edges that connect nodes in a given subgraph are considered potentially contained
+within the subgraph. To define which types of edges are actually allowed in a subgraph an ``edges`` variable
+is placed in the ``sharedVariables`` attribute of the representing ``ArrayList``. 
 
->>> walks = InMemoryArrayList(type="walk", inherits="mixedSubgraph",\
- variables=[ "start", "int", "stop", "int" ])
+In this example, as the subgraph is mixed,
+allowing for both directed an undirected edges, the ``edges`` attribute is as follows:
+
+>>> mixedSubgraphs.getSharedVariables()
+{u'edges': [u'edge', u'directedEdge']}
+
+To illustrate a more interesting example, we create a subgraph representing a path in Richard Durbin's example SQG, 
+termed a *walk*.
+
+To do this we must firstly define a slightly extended subgraph type, not currently contained in the SQG type hierarchy:
+
+>>> walks = InMemoryArrayList(type="walk", inherits="mixedSubgraph", \
+variables=[ "start", "int", "stop", "int" ], sharedVariables={ "edges":[ "segmentEdge", "adjacencyEdge" ] })
+
+This subgraph allows for segment and adjacency edges and requires for each subgraph integer start and stop variables:
+
 >>> walks.getArrayNames()
 ('subgraphName', 'nodes', 'start', 'stop')
 >>> walks.getArrayTypes()
 ('int', 'array', 'int', 'int')
- 
+
+These are used to indicate that path, which can be thought of as representing an actual sequence, starts and ends at specific
+positions within segments. 
+
+You will note that the addition of these two variables extended the array, being appended after the basic attributes of the inheriting
+subgraph type ``mixedSubgraph``.
+
+The two subgraphs defined below illustrate different example *walks* (paths) through the graph:
+
 >>> walks.addDict({ "subgraphName":0, "nodes":\
 [ _1, aL, aR, b1L, b1R, b1L, b1R, cR, cL, b2R, b2L, cL, cR, dL, dR, _2 ], "start":0, "stop":0 })
 >>> walks.addDict({ "subgraphName":1, "nodes":\
 [ aL, aR, b1L, b1R, b1L, b1R, cR, cL, b2L, b2R, cL, cR, dL, dR ], "start":3, "stop":10 })
 
+In the first the the walk starts and ends on stub nodes, without segments and traverses the sequence of segments
+*a; b1; b1; -c; -b2; c; d* where the minus sign indicates a traversal through the reverse complement sequence of the segments
+forward orientation.
+
+In the second the path starts on the third base of the *a* segment and ends on last position of the *d* segment, 
+assuming, for this example, that we use inclusive coordinates and start counting from 1. It also reverse the traversal of b2, 
+hence its sequence is  *a; b1; b1; -c; b2; c; d*.
+ 
 
 Reading and writing SQG files
 -----------------------------
@@ -286,11 +354,15 @@ More Advanced Conversions
 -------------------------
 
 As mentioned, our aim is to provide simple conversion from sqg objects to a variety
-of different databses, file formats and graph and numerical programming packages.
+of different databases, file formats and graph and numerical programming packages.
 
 In the examples chapter you will examples using MongoDB, Numpy and NetworkX and
 conversions to and from the FastG and VCF formats.
 
 Hierarchy
--------------------------
+---------
 
+SQG gives simple support for the hierarchical organisation of graphs through the use of subgraphs
+and the optional ``parents`` variable for an SQG. For example, one graph can be contained in another.
+
+TODO
