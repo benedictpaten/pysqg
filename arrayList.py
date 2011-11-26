@@ -80,7 +80,7 @@ class AbstractArrayList:
         return AbstractArrayList._arrayListTypes[inherits][-1]
     
     def inheritsFrom(self, type):
-        """Returns True iff the array list is of the given type or inherits from a ArrayList of a given type
+        """Returns True iff the array list is of the given type or it inherits from an array list of a given type.
         """
         arrayList = self
         while self != None:
