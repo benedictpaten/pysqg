@@ -57,12 +57,11 @@ for typeString in typeStringsToNodeNamesAndArrays.keys():
 print makeJsonSqgFromSqg(inheritanceGraph)
 
 #Here wedump a dot version of the graph, using the networkX interface.
-nxDiGraph = NX.DiGraph()
-networkxWrite(inheritanceGraph, nxDiGraph)
-for node in nxDiGraph.nodes():
-    nxDiGraph.node[node]["label"] = nxDiGraph.node[node]["name"]
-    if nxDiGraph.node[node]["type"] == "sqgs":
-        nxDiGraph.node[node]["shape"] = "box"
-NX.drawing.nx_agraph.write_dot(nxDiGraph, sys.stdout)
+nxGraph, nxSubgraphs = networkxWrite(inheritanceGraph)
+for node in nxGraph.nodes():
+    nxGraph.node[node]["label"] = nxGraph.node[node]["name"]
+    if nxGraph.node[node]["type"] == "sqgs":
+        nxGraph.node[node]["shape"] = "box"
+NX.drawing.nx_agraph.write_dot(nxGraph, sys.stdout)
 
 
