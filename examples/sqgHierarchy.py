@@ -2,11 +2,14 @@
 """ 
 
 import os
+import sys
 import json
+import networkx as NX
 from pysqg.sqg import Sqg
 from pysqg.arrayList import InMemoryArrayList
 from pysqg.jsonSqg import makeJsonSqgFromSqg
 from pysqg.shared import getPysqgIncludeDir
+from pysqg.py.networkX import networkxWrite
 
 inheritanceGraph = Sqg(includes=["mixedGraph"])
 arrayLists = InMemoryArrayList(type="arrayLists", inherits="node", variables=[ "name", "string", "arrayNames", "string", "arrayTypes", "string" ]) #Nodes representing array list types
@@ -16,9 +19,9 @@ graphEdges = InMemoryArrayList(type="graph", inherits="directedEdge") #Edges sho
 
 #Add them to the graph
 inheritanceGraph.setArrayList(arrayLists)
-inheritanceGraph.setArrayList(sqgs)
+#inheritanceGraph.setArrayList(sqgs)
 inheritanceGraph.setArrayList(inheritEdges)
-inheritanceGraph.setArrayList(graphEdges)
+#inheritanceGraph.setArrayList(graphEdges)
 
 #Build the nodes and connect the graphs to the array types
 typeStringsToNodeNamesAndArrays = {}
@@ -49,7 +52,17 @@ for typeString in typeStringsToNodeNamesAndArrays.keys():
         parentArrayNode, parentArrayList = typeStringsToNodeNamesAndArrays[arrayList.getInherits().getType()]
         inheritEdges.addDict({ "outNode":parentArrayNode, "inNode":arrayNode })
 
+
 #We're done
 print makeJsonSqgFromSqg(inheritanceGraph)
 
-#Here we could dump a dot version of the graph, using the networkX interface.
+#Here wedump a dot version of the graph, using the networkX interface.
+nxDiGraph = NX.DiGraph()
+networkxWrite(inheritanceGraph, nxDiGraph)
+for node in nxDiGraph.nodes():
+    nxDiGraph.node[node]["label"] = nxDiGraph.node[node]["name"]
+    if nxDiGraph.node[node]["type"] == "sqgs":
+        nxDiGraph.node[node]["shape"] = "box"
+NX.drawing.nx_agraph.write_dot(nxDiGraph, sys.stdout)
+
+
