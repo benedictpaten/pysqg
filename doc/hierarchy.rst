@@ -1,6 +1,24 @@
 Hierarchy of Types
 ==================
 
-Show diagram of hierarchy
+The following graph illustrates the current ArrayList types:
 
-Give json definition for each one and describe its use
+.. image:: arrayListHierarchy.png
+	:width: 700px
+
+The following gives the exact definitions of the different SQG graphs currently included in the hierarchy.
+This is extremely tentative and subject to change.
+
+.. toctree::
+
+   include/graph
+   include/mixedGraph
+   include/multigraph
+   include/phylogeneticTree
+   include/segmentGraph
+   include/breakpointGraph
+   include/adjacencyGraph
+   include/dnaHistoryGraph
+   include/ungappedOverlapGraph
+
+  
