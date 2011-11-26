@@ -1,6 +1,7 @@
 mixedGraph.sqg
 _________________________________
 
+>>>
 {
     "directedEdge": [
         {

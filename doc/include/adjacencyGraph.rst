@@ -1,6 +1,7 @@
 adjacencyGraph.sqg
 _________________________________
 
+>>>
 {
     "include": [
         "segmentGraph", 
