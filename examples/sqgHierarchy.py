@@ -56,7 +56,7 @@ for typeString in typeStringsToNodeNamesAndArrays.keys():
 #We're done
 print makeJsonSqgFromSqg(inheritanceGraph)
 
-#Here wedump a dot version of the graph, using the networkX interface.
+#Here we dump a dot version of the graph, using the networkX interface.
 nxGraph, nxSubgraphs = networkxWrite(inheritanceGraph)
 for node in nxGraph.nodes():
     nodeAtts = nxGraph.node[node]

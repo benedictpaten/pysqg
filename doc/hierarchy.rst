@@ -1,12 +1,13 @@
 Hierarchy of Types
 ==================
 
-The following graph illustrates the current ArrayList types:
+The following graph illustrates the current ArrayList types and their relationships
+to the various graphs defined in the hierarchy.
 
-.. image:: arrayListHierarchy.png
-	:width: 700px
+.. image:: sqg_hierarchy.png
+	:width: 1200px
 
-The following gives the exact definitions of the different SQG graphs currently included in the hierarchy.
+The following gives the SQG definitions of the different graphs currently included in the hierarchy.
 This is extremely tentative and subject to change.
 
 .. toctree::

@@ -1,36 +1,42 @@
 Module Documentation
 ====================
 
-Describe the two main modules
+Core Modules
+++++++++++++
 
-Some text, *italic text*, **bold text**
- 
-* bulleted list.  There needs to be a space right after the "*"
-* item 2
- 
-.. note::
-    This is a note.
- 
-Here's some Python code:
- 
->>> for i in range(10):
-...     print i
-
+The module containing the ``Sqg`` class:
 
 .. toctree::
 
    modules/sqg
-	
-And now we're going to talk about something **else**	
+
+The module containing the ``ArrayList`` classes:
 
 .. toctree::
 
    modules/arrayList
-	
-And now we're at the *end*
+
+The module containing functions for converting ``Sqg`` and ``ArrayList`` objects into final the SQG file format. 
 
 .. toctree::
 
    modules/jsonSqg.rst
    
-And now we're at the *end*
+Database Interface Modules
+++++++++++++++++++++++++++
+
+Modules for converting between ``Sqg`` and ``ArrayList`` objects and databases.
+
+.. toctree::
+
+   modules/dbs/mongoDB.rst
+   
+Other Python Package Interface Modules
+++++++++++++++++++++++++++++++++++++++
+
+Modules for converting ``Sqg`` and ``ArrayList`` objects into other Python 
+representations.
+
+.. toctree::
+
+   modules/py/networkX.rst

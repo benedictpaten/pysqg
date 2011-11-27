@@ -4,8 +4,9 @@ import networkx as NX
 from pysqg.arrayList import AbstractArrayList, InMemoryArrayList
 from pysqg.sqg import Sqg
 
-# return a NetowrkX representation of the given SQG
 def networkxWrite(sqg):
+    """Return a NetworkX representation of the given SQG
+    """
     if isSQGDirected(sqg):
         nxGraph = NX.DiGraph()
     else:
@@ -21,9 +22,11 @@ def networkxWrite(sqg):
     nxGraph.graph['sharedVariables'] = sqg.getSharedVariables()
     return nxGraph, nxSubgraphs
 
-# returns an SQG representation of the given NetowrkX graphs
-# (and optional subgraphs).  
 def networkxRead(nxGraph, nxSubgraphList = []):
+    """Returns an SQG representation of the given NetowrkX graphs
+    (and optional subgraphs).  
+    """
+
     sqgName = None
     includes = None
     parents = None
