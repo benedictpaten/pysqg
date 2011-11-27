@@ -19,9 +19,9 @@ graphEdges = InMemoryArrayList(type="graph", inherits="directedEdge") #Edges sho
 
 #Add them to the graph
 inheritanceGraph.setArrayList(arrayLists)
-#inheritanceGraph.setArrayList(sqgs)
+inheritanceGraph.setArrayList(sqgs)
 inheritanceGraph.setArrayList(inheritEdges)
-#inheritanceGraph.setArrayList(graphEdges)
+inheritanceGraph.setArrayList(graphEdges)
 
 #Build the nodes and connect the graphs to the array types
 typeStringsToNodeNamesAndArrays = {}
@@ -59,9 +59,30 @@ print makeJsonSqgFromSqg(inheritanceGraph)
 #Here wedump a dot version of the graph, using the networkX interface.
 nxGraph, nxSubgraphs = networkxWrite(inheritanceGraph)
 for node in nxGraph.nodes():
-    nxGraph.node[node]["label"] = nxGraph.node[node]["name"]
-    if nxGraph.node[node]["type"] == "sqgs":
-        nxGraph.node[node]["shape"] = "box"
+    nodeAtts = nxGraph.node[node]
+    label = "%s [%s]" % (nodeAtts["name"], nodeAtts["type"])
+    if nodeAtts["type"] == "arrayLists":
+        arrayTypes = nodeAtts["arrayTypes"].split()
+        arrayNames = nodeAtts["arrayNames"].split()
+        assert len(arrayTypes) == len(arrayNames)
+        label = "{ %s | { " % label
+        for i in range(len(arrayTypes)):
+            label += "%s:%s" % (arrayNames[i], arrayTypes[i])
+            if i != len(arrayTypes) - 1:
+                label += "|"
+        label += "}}"
+        nodeAtts["shape"] = "record"
+        nodeAtts["color"] = "blue"
+    nodeAtts["label"] = label
+for edge in nxGraph.edges():
+    edgeAtts = nxGraph[edge[0]][edge[1]]
+    if edgeAtts["type"] == "inherit":
+        edgeAtts["weight"] = 5
+        edgeAtts["color"] = "blue"
+    else:
+        edgeAtts["weight"] = 1
+        edgeAtts["style"] = "dotted"
+
 NX.drawing.nx_agraph.write_dot(nxGraph, sys.stdout)
 
 
