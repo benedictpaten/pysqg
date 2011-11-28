@@ -168,6 +168,9 @@ class InMemoryArrayList(AbstractArrayList):
         
     def _length(self):
         return len(self._array) / self.getArrayWidth()
+
+    def size(self):
+	return self._length()
     
     class _iter():
         def __init__(self, arrayList):
